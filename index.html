@@ -95,11 +95,11 @@
         .temperatura { background: linear-gradient(45deg, #f8961e, #f3722c); }
         .humedad { background: linear-gradient(45deg, #4895ef, #3f37c9); }
         .peso-objetivo { background: linear-gradient(45deg, #1b6a1d, #28a745); }
-        
-        /* Colores Nuevos para Producción */
         .huevos-cantidad { background: linear-gradient(45deg, #ffecd2, #fcb69f); color: #5c3a21; }
         .porcentaje-produccion { background: linear-gradient(45deg, #fca311, #e85d04); }
         .horas-luz { background: linear-gradient(45deg, #ffdd00, #fbb034); color: #333; }
+        /* Nuevo color para tipo de alimento */
+        .tipo-alimento { background: linear-gradient(45deg, #a67c52, #8c6239); }
 
 
         /* Estilos de Formularios e Inputs */
@@ -127,9 +127,6 @@
         .btn-iniciar { background: #b5651d; }
         .btn-eliminar { background: #f72585; }
         .btn-registrar { background: #b5651d; }
-        .btn-exportar { background: #6d4c41; }
-        .btn-calcular-costo { background: #4CAF50; }
-        button:hover { opacity: 0.9; }
 
         /* Estilos de Tablas */
         .tabla-container {
@@ -191,14 +188,6 @@
             width: 0%;
             transition: width 0.5s ease-out;
         }
-        .costo-input-group {
-            margin-bottom: 10px;
-        }
-        .costo-input-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
     </style>
 </head>
 <body>
@@ -232,6 +221,7 @@
                         <div class="metrica vivos"><h3>Aves vivas</h3><p id="levante-vivos">0</p></div>
                         <div class="metrica muertos"><h3>Mortalidad</h3><p id="levante-muertos">0</p></div>
                         <div class="metrica dias"><h3>Días de vida</h3><p id="levante-dias">0</p></div>
+                        <div class="metrica tipo-alimento"><h3>Alimento Hoy</h3><p id="levante-alimento">--</p></div>
                         <div class="metrica consumo"><h3>Consumo ave/día</h3><p id="levante-consumo">0 g</p></div>
                         <div class="metrica peso-objetivo"><h3>Peso Corporal Obj.</h3><p id="levante-peso">0 g</p></div>
                         <div class="metrica temperatura"><h3>Temperatura Ideal</h3><p id="levante-temp">0°C</p></div>
@@ -244,11 +234,11 @@
                         <div class="metrica vivos"><h3>Aves vivas</h3><p id="prod-vivos">0</p></div>
                         <div class="metrica muertos"><h3>Mortalidad</h3><p id="prod-muertos">0</p></div>
                         <div class="metrica semanas"><h3>Semanas de vida</h3><p id="prod-semanas">0</p></div>
-                        <div class="metrica huevos-cantidad"><h3>Huevos Esperados Hoy</h3><p id="prod-huevos-hoy">0</p></div>
+                        <div class="metrica tipo-alimento"><h3>Alimento Hoy</h3><p id="prod-alimento">--</p></div>
+                        <div class="metrica huevos-cantidad"><h3>Huevos Lote Hoy</h3><p id="prod-huevos-hoy">0</p></div>
                         <div class="metrica porcentaje-produccion"><h3>Producción Ideal</h3><p id="prod-porcentaje-ideal">0%</p></div>
                         <div class="metrica horas-luz"><h3>Horas Luz</h3><p id="prod-horas-luz">0 h</p></div>
                         <div class="metrica consumo"><h3>Consumo ave/día</h3><p id="prod-consumo">0 g</p></div>
-                        <div class="metrica peso-objetivo"><h3>Peso Corporal Obj.</h3><p id="prod-peso">0 g</p></div>
                     </div>
                 </div>
                 
@@ -258,14 +248,15 @@
         
         <div id="produccion" class="tab-content">
             <div class="card">
-                <h3>Proyección de Producción de Huevos (por ave)</h3>
+                <h3>Proyección de Producción de Huevos del Lote</h3>
                  <div class="tabla-container">
                     <table id="tabla-produccion">
                          <thead>
                             <tr>
                                 <th>Semana</th>
                                 <th>Producción (% HD)</th>
-                                <th>Huevos Acumulados</th>
+                                <th>Huevos Semanales Lote</th>
+                                <th>Huevos Lote Acum.</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -275,18 +266,16 @@
         </div>
 
         <div id="consumo" class="tab-content">
-            <div class="card">
-                <h3>Calculadora de Costos del Alimento (Próximamente)</h3>
-            </div>
              <div class="card">
-                <h3>Proyección de Consumo de Alimento (por ave)</h3>
+                <h3>Proyección de Consumo de Alimento del Lote</h3>
                 <div class="tabla-container">
                     <table id="tabla-consumo">
                         <thead>
                             <tr>
                                 <th>Semana</th>
-                                <th>Consumo Diario (g)</th>
-                                <th>Consumo Acum. (kg)</th>
+                                <th>Tipo de Alimento</th>
+                                <th>Consumo Lote Semanal (kg)</th>
+                                <th>Consumo Lote Acum. (kg)</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -344,6 +333,13 @@
         const HUMEDAD_IDEAL_LEVANTE = [65, 65, 60, 60, 55, 55];
         const HORAS_LUZ_SEMANALES = [22, 16, 14, 12, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 12, 13, 14, 15, 15.5, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16];
 
+        function getTipoAlimento(semana) {
+            if (semana >= 1 && semana <= 4) return "Inicio";
+            if (semana >= 5 && semana <= 17) return "Crecimiento";
+            if (semana >= 18) return "Postura";
+            return "--";
+        }
+
         // --- LÓGICA PRINCIPAL DE LA APLICACIÓN ---
         function actualizar() {
             const tieneLoteIniciado = datos.fechaInicio !== null && datos.avesIniciales > 0;
@@ -359,6 +355,7 @@
             
             const avesVivasActuales = datos.avesIniciales - datos.avesMuertas;
             const datosSemanaActual = DATOS_SEMANALES[semanaIndex];
+            const alimentoActual = getTipoAlimento(semanaActual);
 
             const progresoPorcentaje = Math.min((semanaActual / CICLO_SEMANAS) * 100, 100);
             document.getElementById('progreso-lote').style.width = `${progresoPorcentaje}%`;
@@ -372,6 +369,7 @@
                 document.getElementById('levante-dias').textContent = diasTranscurridos;
                 document.getElementById('levante-consumo').textContent = `${datosSemanaActual[1]} g`;
                 document.getElementById('levante-peso').textContent = `${datosSemanaActual[2]} g`;
+                document.getElementById('levante-alimento').textContent = alimentoActual;
                 const temp = (semanaIndex < TEMPERATURA_IDEAL_LEVANTE.length) ? `${TEMPERATURA_IDEAL_LEVANTE[semanaIndex]}°C` : 'Ambiente';
                 const humedad = (semanaIndex < HUMEDAD_IDEAL_LEVANTE.length) ? `${HUMEDAD_IDEAL_LEVANTE[semanaIndex]}%` : 'Ambiente';
                 document.getElementById('levante-temp').textContent = temp;
@@ -384,7 +382,7 @@
                 document.getElementById('prod-muertos').textContent = datos.avesMuertas;
                 document.getElementById('prod-semanas').textContent = semanaActual > CICLO_SEMANAS ? `${CICLO_SEMANAS} (Fin)` : semanaActual;
                 document.getElementById('prod-consumo').textContent = `${datosSemanaActual[1]} g`;
-                document.getElementById('prod-peso').textContent = `${datosSemanaActual[2]} g`;
+                document.getElementById('prod-alimento').textContent = alimentoActual;
                 const porcentajeProduccion = datosSemanaActual[3];
                 const huevosEsperadosHoy = Math.round(avesVivasActuales * (porcentajeProduccion / 100));
                 const horasLuz = HORAS_LUZ_SEMANALES[semanaIndex];
@@ -394,7 +392,6 @@
             }
         }
         
-        // --- FUNCIONES AUXILIARES ---
         function guardarDatos() {
             localStorage.setItem('gallinasApp', JSON.stringify(datos));
         }
@@ -407,34 +404,43 @@
             actualizarHistorialMortalidad();
         }
 
-        function poblarTablasProyeccion() {
+        function poblarTablasProyeccion(numAves = 1) {
             const tablaConsumoBody = document.querySelector('#tabla-consumo tbody');
             const tablaProduccionBody = document.querySelector('#tabla-produccion tbody');
             const tablaPesosBody = document.querySelector('#tabla-pesos tbody');
-            if (!tablaConsumoBody || !tablaProduccionBody || !tablaPesosBody) return;
-
+            
             tablaConsumoBody.innerHTML = '';
             tablaProduccionBody.innerHTML = '';
             tablaPesosBody.innerHTML = '';
+
             let consumoAcumuladoKg = 0;
             let huevosAcumulados = 0;
             for (let i = 0; i < CICLO_SEMANAS; i++) {
-                const semanaData = DATOS_SEMANALES[i];
-                const [semanaNum, consumoDiario, pesoObjetivo, posturaPorc] = semanaData;
-                consumoAcumuladoKg += (consumoDiario * 7) / 1000;
-                let rowConsumo = `<tr><td>${semanaNum}</td><td>${consumoDiario} g</td><td>${consumoAcumuladoKg.toFixed(2)} kg</td></tr>`;
-                if (semanaNum === 1 || semanaNum === 18) {
-                    const fase = semanaNum === 1 ? 'FASE DE LEVANTE (SEM 1-17)' : 'FASE DE PRODUCCIÓN (SEM 18-90)';
-                    rowConsumo = `<tr class="fila-fase"><td colspan="3">${fase}</td></tr>` + rowConsumo;
-                }
-                tablaConsumoBody.innerHTML += rowConsumo;
-                const huevosSemana = (posturaPorc / 100) * 7;
-                huevosAcumulados += huevosSemana;
-                let rowProduccion = `<tr><td>${semanaNum}</td><td>${posturaPorc}%</td><td>${Math.round(huevosAcumulados)}</td></tr>`;
-                if (semanaNum === 18) rowProduccion = `<tr class="fila-fase"><td colspan="3">INICIO DE POSTURA</td></tr>` + rowProduccion;
-                tablaProduccionBody.innerHTML += rowProduccion;
-                let rowPeso = `<tr><td>${semanaNum}</td><td>${pesoObjetivo} g</td></tr>`;
-                tablaPesosBody.innerHTML += rowPeso;
+                const [semanaNum, consumoDiario, pesoObjetivo, posturaPorc] = DATOS_SEMANALES[i];
+                const tipoAlimento = getTipoAlimento(semanaNum);
+                
+                // Tabla de Consumo
+                const consumoSemanalLoteKg = (consumoDiario * 7 * numAves) / 1000;
+                consumoAcumuladoKg += consumoSemanalLoteKg;
+                tablaConsumoBody.innerHTML += `<tr>
+                    <td>${semanaNum}</td>
+                    <td>${tipoAlimento}</td>
+                    <td>${consumoSemanalLoteKg.toFixed(2)}</td>
+                    <td>${consumoAcumuladoKg.toFixed(2)}</td>
+                </tr>`;
+
+                // Tabla de Producción
+                const huevosSemanalesLote = (posturaPorc / 100) * 7 * numAves;
+                huevosAcumulados += huevosSemanalesLote;
+                tablaProduccionBody.innerHTML += `<tr>
+                    <td>${semanaNum}</td>
+                    <td>${posturaPorc}%</td>
+                    <td>${Math.round(huevosSemanalesLote)}</td>
+                    <td>${Math.round(huevosAcumulados)}</td>
+                </tr>`;
+
+                // Tabla de Pesos (sigue siendo por ave)
+                tablaPesosBody.innerHTML += `<tr><td>${semanaNum}</td><td>${pesoObjetivo} g</td></tr>`;
             }
         }
 
@@ -442,7 +448,7 @@
             const historialDiv = document.getElementById('historial-mortalidad');
             if (!historialDiv) return;
             if (datos.historialMortalidad.length === 0) {
-                historialDiv.innerHTML = '<p>No hay registros de mortalidad</p>';
+                historialDiv.innerHTML = '<p>No hay registros</p>';
             } else {
                 const historialOrdenado = datos.historialMortalidad.slice().sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
                 historialDiv.innerHTML = historialOrdenado.map(item => `
@@ -462,22 +468,21 @@
             }
             datos = { avesIniciales: cantidad, avesMuertas: 0, fechaInicio: fecha, historialMortalidad: [] };
             guardarDatos();
+            poblarTablasProyeccion(cantidad); // <-- Punto clave: se actualizan tablas con el número de aves
             actualizar();
-            alert(`¡Lote iniciado con ${cantidad} aves!`);
+            alert(`¡Lote iniciado con ${cantidad} aves! Las tablas de proyección han sido actualizadas.`);
         }
 
         function registrarMuertos() {
             const muertosInput = document.getElementById('muertos-hoy');
             const muertos = parseInt(muertosInput.value);
-            const avesVivasActuales = datos.avesIniciales - datos.avesMuertas;
             if (isNaN(muertos) || muertos <= 0) {
-                alert('Por favor, ingrese un número válido.');
-                return;
+                alert('Ingrese un número válido.'); return;
             }
             if (!datos.fechaInicio) {
-                alert('Debe iniciar un lote antes de registrar muertes.');
-                return;
+                alert('Debe iniciar un lote.'); return;
             }
+            const avesVivasActuales = datos.avesIniciales - datos.avesMuertas;
             if (avesVivasActuales < muertos) {
                 alert(`No puedes registrar ${muertos} muertes. Solo quedan ${avesVivasActuales} aves vivas.`);
                 return;
@@ -494,6 +499,7 @@
             if (confirm('¿Estás seguro de eliminar el lote actual?')) {
                 datos = { avesIniciales: 0, avesMuertas: 0, fechaInicio: null, historialMortalidad: [] };
                 guardarDatos();
+                poblarTablasProyeccion(1); // <-- Se resetean las tablas a la proyección por ave
                 actualizar();
                 alert('Lote eliminado.');
             }
@@ -502,7 +508,8 @@
         // --- INICIALIZACIÓN ---
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('fecha-inicio').valueAsDate = new Date();
-            poblarTablasProyeccion();
+            // Carga las tablas con la cantidad de aves del lote guardado, o con 1 por defecto
+            poblarTablasProyeccion(datos.avesIniciales > 0 ? datos.avesIniciales : 1);
             mostrarTab('resumen');
             actualizar();
         });
