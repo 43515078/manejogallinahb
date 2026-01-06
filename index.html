@@ -324,14 +324,47 @@
             fechaInicio: null,
             historialMortalidad: []
         };
+
         const CICLO_SEMANAS = 90;
         const SEMANA_INICIO_PRODUCCION = 18;
+
         const DATOS_SEMANALES = [
-            [1, 14, 70, 0], [2, 23, 140, 0], [3, 31, 225, 0], [4, 38, 320, 0], [5, 45, 420, 0], [6, 51, 525, 0], [7, 57, 630, 0], [8, 62, 740, 0], [9, 67, 845, 0], [10, 71, 950, 0], [11, 75, 1045, 0], [12, 79, 1135, 0], [13, 83, 1215, 0], [14, 87, 1290, 0], [15, 92, 1355, 0], [16, 97, 1410, 0], [17, 102, 1460, 0], [18, 105, 1510, 5], [19, 108, 1560, 25], [20, 110, 1610, 55], [21, 112, 1655, 78], [22, 114, 1690, 88], [23, 115, 1720, 93], [24, 116, 1745, 95], [25, 117, 1765, 96], [26, 117, 1780, 96.5], [27, 117, 1795, 96.5], [28, 118, 1805, 96], [29, 118, 1815, 96], [30, 118, 1825, 95.5], [31, 118, 1830, 95], [32, 118, 1835, 95], [33, 118, 1840, 94.5], [34, 118, 1845, 94.5], [35, 118, 1850, 94], [36, 117, 1855, 94], [37, 117, 1860, 93.5], [38, 117, 1865, 93.5], [39, 117, 1870, 93], [40, 117, 1875, 93], [41, 117, 1880, 92.5], [42, 117, 1885, 92], [43, 116, 1890, 92], [44, 116, 1895, 91.5], [45, 116, 1900, 91], [46, 116, 1900, 91], [47, 116, 1905, 90.5], [48, 116, 1905, 90], [49, 115, 1910, 90], [50, 115, 1910, 89.5], [51, 115, 1915, 89], [52, 115, 1915, 88.5], [53, 115, 1920, 88.5], [54, 115, 1920, 88], [55, 114, 1920, 87.5], [56, 114, 1925, 87], [57, 114, 1925, 86.5], [58, 114, 1925, 86], [59, 114, 1930, 85.5], [60, 113, 1930, 85], [61, 113, 1930, 84.5], [62, 113, 1935, 84], [63, 113, 1935, 83.5], [64, 113, 1935, 83], [65, 113, 1940, 82.5], [66, 112, 1940, 82], [67, 112, 1940, 81.5], [68, 112, 1940, 80.5], [69, 112, 1945, 80], [70, 112, 1945, 79.5], [71, 111, 1945, 79], [72, 111, 1950, 78], [73, 111, 1950, 77.5], [74, 111, 1950, 77], [75, 111, 1950, 76], [76, 110, 1955, 75.5], [77, 110, 1955, 74.5], [78, 110, 1955, 74], [79, 110, 1955, 73], [80, 110, 1960, 72.5], [81, 109, 1960, 71.5], [82, 109, 1960, 71], [83, 109, 1960, 70], [84, 109, 1965, 69.5], [85, 109, 1965, 68.5], [86, 108, 1965, 67.5], [87, 108, 1970, 66.5], [88, 108, 1970, 65.5], [89, 108, 1970, 64.5], [90, 108, 1970, 63.5]
+            [1, 14, 70, 0], [2, 23, 140, 0], [3, 31, 225, 0], [4, 38, 320, 0],
+            [5, 45, 420, 0], [6, 51, 525, 0], [7, 57, 630, 0], [8, 62, 740, 0],
+            [9, 67, 845, 0], [10, 71, 950, 0], [11, 75, 1045, 0], [12, 79, 1135, 0],
+            [13, 83, 1215, 0], [14, 87, 1290, 0], [15, 92, 1355, 0], [16, 97, 1410, 0],
+            [17, 102, 1460, 0], [18, 105, 1510, 5], [19, 108, 1560, 25], [20, 110, 1610, 55],
+            [21, 112, 1655, 78], [22, 114, 1690, 88], [23, 115, 1720, 93], [24, 116, 1745, 95],
+            [25, 117, 1765, 96], [26, 117, 1780, 96.5], [27, 117, 1795, 96.5], [28, 118, 1805, 96],
+            [29, 118, 1815, 96], [30, 118, 1825, 95.5], [31, 118, 1830, 95], [32, 118, 1835, 95],
+            [33, 118, 1840, 94.5], [34, 118, 1845, 94.5], [35, 118, 1850, 94], [36, 117, 1855, 94],
+            [37, 117, 1860, 93.5], [38, 117, 1865, 93.5], [39, 117, 1870, 93], [40, 117, 1875, 93],
+            [41, 117, 1880, 92.5], [42, 117, 1885, 92], [43, 116, 1890, 92], [44, 116, 1895, 91.5],
+            [45, 116, 1900, 91], [46, 116, 1900, 91], [47, 116, 1905, 90.5], [48, 116, 1905, 90],
+            [49, 115, 1910, 90], [50, 115, 1910, 89.5], [51, 115, 1915, 89], [52, 115, 1915, 88.5],
+            [53, 115, 1920, 88.5], [54, 115, 1920, 88], [55, 114, 1920, 87.5], [56, 114, 1925, 87],
+            [57, 114, 1925, 86.5], [58, 114, 1925, 86], [59, 114, 1930, 85.5], [60, 113, 1930, 85],
+            [61, 113, 1930, 84.5], [62, 113, 1935, 84], [63, 113, 1935, 83.5], [64, 113, 1935, 83],
+            [65, 113, 1940, 82.5], [66, 112, 1940, 82], [67, 112, 1940, 81.5], [68, 112, 1940, 80.5],
+            [69, 112, 1945, 80], [70, 112, 1945, 79.5], [71, 111, 1945, 79], [72, 111, 1950, 78],
+            [73, 111, 1950, 77.5], [74, 111, 1950, 77], [75, 111, 1950, 76], [76, 110, 1955, 75.5],
+            [77, 110, 1955, 74.5], [78, 110, 1955, 74], [79, 110, 1955, 73], [80, 110, 1960, 72.5],
+            [81, 109, 1960, 71.5], [82, 109, 1960, 71], [83, 109, 1960, 70], [84, 109, 1965, 69.5],
+            [85, 109, 1965, 68.5], [86, 108, 1965, 67.5], [87, 108, 1970, 66.5], [88, 108, 1970, 65.5],
+            [89, 108, 1970, 64.5], [90, 108, 1970, 63.5]
         ];
+
         const TEMPERATURA_IDEAL_LEVANTE = [34, 31, 29, 27, 25, 23];
         const HUMEDAD_IDEAL_LEVANTE = [65, 65, 60, 60, 55, 55];
-        const HORAS_LUZ_SEMANALES = [22, 16, 14, 12, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11, 12, 13, 14, 15, 15.5, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16];
+
+        const HORAS_LUZ_SEMANALES = [
+            22, 16, 14, 12, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+            11, 12, 13, 14, 15, 15.5, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+            16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+            16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+            16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+            16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16
+        ];
 
         function getTipoAlimento(semana) {
             if (semana >= 1 && semana <= 4) return "Inicio";
@@ -349,7 +382,11 @@
             
             const hoy = new Date();
             const fechaInicioLote = new Date(datos.fechaInicio);
-            const diasTranscurridos = Math.floor((hoy - fechaInicioLote) / (1000 * 60 * 60 * 24));
+
+            // (4) Evitar días negativos si alguien pone fecha futura
+            const diasTranscurridosRaw = Math.floor((hoy - fechaInicioLote) / (1000 * 60 * 60 * 24));
+            const diasTranscurridos = Math.max(0, diasTranscurridosRaw);
+
             const semanaActual = Math.max(1, Math.floor(diasTranscurridos / 7) + 1);
             const semanaIndex = Math.min(semanaActual - 1, CICLO_SEMANAS - 1);
             
@@ -370,6 +407,7 @@
                 document.getElementById('levante-consumo').textContent = `${datosSemanaActual[1]} g`;
                 document.getElementById('levante-peso').textContent = `${datosSemanaActual[2]} g`;
                 document.getElementById('levante-alimento').textContent = alimentoActual;
+
                 const temp = (semanaIndex < TEMPERATURA_IDEAL_LEVANTE.length) ? `${TEMPERATURA_IDEAL_LEVANTE[semanaIndex]}°C` : 'Ambiente';
                 const humedad = (semanaIndex < HUMEDAD_IDEAL_LEVANTE.length) ? `${HUMEDAD_IDEAL_LEVANTE[semanaIndex]}%` : 'Ambiente';
                 document.getElementById('levante-temp').textContent = temp;
@@ -383,6 +421,7 @@
                 document.getElementById('prod-semanas').textContent = semanaActual > CICLO_SEMANAS ? `${CICLO_SEMANAS} (Fin)` : semanaActual;
                 document.getElementById('prod-consumo').textContent = `${datosSemanaActual[1]} g`;
                 document.getElementById('prod-alimento').textContent = alimentoActual;
+
                 const porcentajeProduccion = datosSemanaActual[3];
                 const huevosEsperadosHoy = Math.round(avesVivasActuales * (porcentajeProduccion / 100));
                 const horasLuz = HORAS_LUZ_SEMANALES[semanaIndex];
@@ -415,6 +454,7 @@
 
             let consumoAcumuladoKg = 0;
             let huevosAcumulados = 0;
+
             for (let i = 0; i < CICLO_SEMANAS; i++) {
                 const [semanaNum, consumoDiario, pesoObjetivo, posturaPorc] = DATOS_SEMANALES[i];
                 const tipoAlimento = getTipoAlimento(semanaNum);
@@ -422,6 +462,7 @@
                 // Tabla de Consumo
                 const consumoSemanalLoteKg = (consumoDiario * 7 * numAves) / 1000;
                 consumoAcumuladoKg += consumoSemanalLoteKg;
+
                 tablaConsumoBody.innerHTML += `<tr>
                     <td>${semanaNum}</td>
                     <td>${tipoAlimento}</td>
@@ -429,17 +470,26 @@
                     <td>${consumoAcumuladoKg.toFixed(2)}</td>
                 </tr>`;
 
-                // Tabla de Producción
-                const huevosSemanalesLote = (posturaPorc / 100) * 7 * numAves;
-                huevosAcumulados += huevosSemanalesLote;
+                // (3) Tabla de Producción: antes de semana 18 mostrar "--"
+                let huevosSemanalesLote = 0;
+                let huevosSemanalesTexto = "--";
+                let huevosAcumuladosTexto = "--";
+
+                if (semanaNum >= SEMANA_INICIO_PRODUCCION) {
+                    huevosSemanalesLote = (posturaPorc / 100) * 7 * numAves;
+                    huevosAcumulados += huevosSemanalesLote;
+                    huevosSemanalesTexto = Math.round(huevosSemanalesLote);
+                    huevosAcumuladosTexto = Math.round(huevosAcumulados);
+                }
+
                 tablaProduccionBody.innerHTML += `<tr>
                     <td>${semanaNum}</td>
                     <td>${posturaPorc}%</td>
-                    <td>${Math.round(huevosSemanalesLote)}</td>
-                    <td>${Math.round(huevosAcumulados)}</td>
+                    <td>${huevosSemanalesTexto}</td>
+                    <td>${huevosAcumuladosTexto}</td>
                 </tr>`;
 
-                // Tabla de Pesos (sigue siendo por ave)
+                // Tabla de Pesos (por ave)
                 tablaPesosBody.innerHTML += `<tr><td>${semanaNum}</td><td>${pesoObjetivo} g</td></tr>`;
             }
         }
@@ -447,13 +497,17 @@
         function actualizarHistorialMortalidad() {
             const historialDiv = document.getElementById('historial-mortalidad');
             if (!historialDiv) return;
+
             if (datos.historialMortalidad.length === 0) {
                 historialDiv.innerHTML = '<p>No hay registros</p>';
             } else {
-                const historialOrdenado = datos.historialMortalidad.slice().sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+                const historialOrdenado = datos.historialMortalidad
+                    .slice()
+                    .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
                 historialDiv.innerHTML = historialOrdenado.map(item => `
                     <div class="historial-item">
-                        <span>${new Date(item.fecha).toLocaleDateString()}</span>
+                        <span>${new Date(item.fecha + "T00:00:00").toLocaleDateString()}</span>
                         <span>${item.cantidad} aves</span>
                     </div>`).join('');
             }
@@ -462,35 +516,55 @@
         function iniciarLote() {
             const cantidad = parseInt(document.getElementById('aves-iniciales').value);
             const fecha = document.getElementById('fecha-inicio').value;
+
             if (isNaN(cantidad) || cantidad <= 0 || !fecha) {
                 alert('Por favor, ingrese una cantidad de aves válida y una fecha de inicio.');
                 return;
             }
+
             datos = { avesIniciales: cantidad, avesMuertas: 0, fechaInicio: fecha, historialMortalidad: [] };
             guardarDatos();
-            poblarTablasProyeccion(cantidad); // <-- Punto clave: se actualizan tablas con el número de aves
+
+            poblarTablasProyeccion(cantidad);
             actualizar();
+
             alert(`¡Lote iniciado con ${cantidad} aves! Las tablas de proyección han sido actualizadas.`);
         }
 
         function registrarMuertos() {
             const muertosInput = document.getElementById('muertos-hoy');
             const muertos = parseInt(muertosInput.value);
+
             if (isNaN(muertos) || muertos <= 0) {
-                alert('Ingrese un número válido.'); return;
+                alert('Ingrese un número válido.');
+                return;
             }
             if (!datos.fechaInicio) {
-                alert('Debe iniciar un lote.'); return;
+                alert('Debe iniciar un lote.');
+                return;
             }
+
             const avesVivasActuales = datos.avesIniciales - datos.avesMuertas;
             if (avesVivasActuales < muertos) {
                 alert(`No puedes registrar ${muertos} muertes. Solo quedan ${avesVivasActuales} aves vivas.`);
                 return;
             }
+
             datos.avesMuertas += muertos;
-            datos.historialMortalidad.push({ fecha: new Date().toISOString(), cantidad: muertos });
+
+            // (1) Guardar fecha LOCAL (YYYY-MM-DD) para evitar desfase por UTC
+            const hoyLocal = new Date();
+            const yyyy = hoyLocal.getFullYear();
+            const mm = String(hoyLocal.getMonth() + 1).padStart(2, '0');
+            const dd = String(hoyLocal.getDate()).padStart(2, '0');
+            const fechaLocal = `${yyyy}-${mm}-${dd}`;
+
+            datos.historialMortalidad.push({ fecha: fechaLocal, cantidad: muertos });
+
             guardarDatos();
             actualizar();
+            actualizarHistorialMortalidad();
+
             muertosInput.value = '';
             alert(`Registradas ${muertos} aves muertas.`);
         }
@@ -499,8 +573,15 @@
             if (confirm('¿Estás seguro de eliminar el lote actual?')) {
                 datos = { avesIniciales: 0, avesMuertas: 0, fechaInicio: null, historialMortalidad: [] };
                 guardarDatos();
-                poblarTablasProyeccion(1); // <-- Se resetean las tablas a la proyección por ave
+
+                poblarTablasProyeccion(1);
                 actualizar();
+
+                // (6) Limpiar input de muertos
+                const muertosInput = document.getElementById('muertos-hoy');
+                if (muertosInput) muertosInput.value = '';
+
+                actualizarHistorialMortalidad();
                 alert('Lote eliminado.');
             }
         }
@@ -508,8 +589,10 @@
         // --- INICIALIZACIÓN ---
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('fecha-inicio').valueAsDate = new Date();
+
             // Carga las tablas con la cantidad de aves del lote guardado, o con 1 por defecto
             poblarTablasProyeccion(datos.avesIniciales > 0 ? datos.avesIniciales : 1);
+
             mostrarTab('resumen');
             actualizar();
         });
