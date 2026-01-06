@@ -19,7 +19,7 @@
             padding: 15px;
         }
         h1 {
-            color: #b5651d; /* Color marrón característico */
+            color: #b5651d;
             text-align: center;
             margin-bottom: 15px;
         }
@@ -63,8 +63,8 @@
             margin-bottom: 20px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-        
-        /* Métricas (en Resumen) */
+
+        /* Métricas */
         .metricas {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -85,7 +85,7 @@
         }
         .metrica h3 { margin: 0 0 5px 0; font-size: 1em; }
         .metrica p { margin: 0; font-size: 1.5em; }
-        
+
         /* Colores de Métricas */
         .vivos { background: linear-gradient(45deg, #4cc9f0, #4361ee); }
         .muertos { background: linear-gradient(45deg, #f72585, #b40431); }
@@ -98,11 +98,9 @@
         .huevos-cantidad { background: linear-gradient(45deg, #ffecd2, #fcb69f); color: #5c3a21; }
         .porcentaje-produccion { background: linear-gradient(45deg, #fca311, #e85d04); }
         .horas-luz { background: linear-gradient(45deg, #ffdd00, #fbb034); color: #333; }
-        /* Nuevo color para tipo de alimento */
         .tipo-alimento { background: linear-gradient(45deg, #a67c52, #8c6239); }
 
-
-        /* Estilos de Formularios e Inputs */
+        /* Inputs y botones */
         input {
             width: 100%;
             padding: 12px;
@@ -128,7 +126,7 @@
         .btn-eliminar { background: #f72585; }
         .btn-registrar { background: #b5651d; }
 
-        /* Estilos de Tablas */
+        /* Tablas */
         .tabla-container {
             max-height: 400px;
             overflow-y: auto;
@@ -151,8 +149,7 @@
             position: sticky;
             top: 0;
         }
-        .fila-fase { font-weight: bold; background: #fef9e7; }
-        
+
         /* Historial de Mortalidad */
         .historial-mortalidad {
             max-height: 300px;
@@ -191,411 +188,479 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🐔 MANEJO DE GALLINAS HY-LINE BROWN</h1>
-        
-        <div class="tabs">
-            <div class="tab active" onclick="mostrarTab('resumen')">Resumen</div>
-            <div class="tab" onclick="mostrarTab('produccion')">Producción Huevos</div>
-            <div class="tab" onclick="mostrarTab('consumo')">Consumo Alimento</div>
-            <div class="tab" onclick="mostrarTab('pesos')">Peso Corporal</div>
-            <div class="tab" onclick="mostrarTab('mortalidad')">Mortalidad</div>
+<div class="container">
+    <h1>🐔 MANEJO DE GALLINAS HY-LINE BROWN</h1>
+
+    <div class="tabs">
+        <div class="tab active" onclick="mostrarTab('resumen')">Resumen</div>
+        <div class="tab" onclick="mostrarTab('produccion')">Producción Huevos</div>
+        <div class="tab" onclick="mostrarTab('consumo')">Consumo Alimento</div>
+        <div class="tab" onclick="mostrarTab('pesos')">Peso Corporal</div>
+        <div class="tab" onclick="mostrarTab('mortalidad')">Mortalidad</div>
+    </div>
+
+    <div id="resumen" class="tab-content active">
+        <div id="formulario-inicio" class="card">
+            <h3>Iniciar nuevo lote</h3>
+            <input type="number" id="aves-iniciales" placeholder="Cantidad de aves iniciales" min="1">
+            <input type="date" id="fecha-inicio">
+            <button class="btn-iniciar" onclick="iniciarLote()">🟢 Iniciar Lote</button>
         </div>
 
-        <div id="resumen" class="tab-content active">
-            <div id="formulario-inicio" class="card">
-                <h3>Iniciar nuevo lote</h3>
-                <input type="number" id="aves-iniciales" placeholder="Cantidad de aves iniciales" min="1">
-                <input type="date" id="fecha-inicio">
-                <button class="btn-iniciar" onclick="iniciarLote()">🟢 Iniciar Lote</button>
+        <div id="resumen-lote" class="card" style="display:none;">
+            <h3 id="titulo-resumen">Resumen del Lote</h3>
+            <div class="progress-bar">
+                <div class="progress" id="progreso-lote"></div>
             </div>
 
-            <div id="resumen-lote" class="card" style="display: none;">
-                <h3 id="titulo-resumen">Resumen del Lote</h3>
-                <div class="progress-bar">
-                    <div class="progress" id="progreso-lote"></div>
+            <div id="resumen-levante" style="display:none;">
+                <div class="metricas">
+                    <div class="metrica vivos"><h3>Aves vivas</h3><p id="levante-vivos">0</p></div>
+                    <div class="metrica muertos"><h3>Mortalidad</h3><p id="levante-muertos">0</p></div>
+                    <div class="metrica dias"><h3>Días de vida</h3><p id="levante-dias">0</p></div>
+                    <div class="metrica tipo-alimento"><h3>Alimento Hoy</h3><p id="levante-alimento">--</p></div>
+                    <div class="metrica consumo"><h3>Consumo ave/día</h3><p id="levante-consumo">--</p></div>
+                    <div class="metrica peso-objetivo"><h3>Peso Corporal Obj.</h3><p id="levante-peso">0 g</p></div>
+                    <div class="metrica temperatura"><h3>Temperatura Ideal</h3><p id="levante-temp">0°C</p></div>
+                    <div class="metrica humedad"><h3>Humedad Ideal</h3><p id="levante-humedad">0%</p></div>
                 </div>
-                
-                <div id="resumen-levante" style="display: none;">
-                    <div class="metricas">
-                        <div class="metrica vivos"><h3>Aves vivas</h3><p id="levante-vivos">0</p></div>
-                        <div class="metrica muertos"><h3>Mortalidad</h3><p id="levante-muertos">0</p></div>
-                        <div class="metrica dias"><h3>Días de vida</h3><p id="levante-dias">0</p></div>
-                        <div class="metrica tipo-alimento"><h3>Alimento Hoy</h3><p id="levante-alimento">--</p></div>
-                        <div class="metrica consumo"><h3>Consumo ave/día</h3><p id="levante-consumo">0 g</p></div>
-                        <div class="metrica peso-objetivo"><h3>Peso Corporal Obj.</h3><p id="levante-peso">0 g</p></div>
-                        <div class="metrica temperatura"><h3>Temperatura Ideal</h3><p id="levante-temp">0°C</p></div>
-                        <div class="metrica humedad"><h3>Humedad Ideal</h3><p id="levante-humedad">0%</p></div>
-                    </div>
-                </div>
-
-                <div id="resumen-produccion" style="display: none;">
-                     <div class="metricas">
-                        <div class="metrica vivos"><h3>Aves vivas</h3><p id="prod-vivos">0</p></div>
-                        <div class="metrica muertos"><h3>Mortalidad</h3><p id="prod-muertos">0</p></div>
-                        <div class="metrica semanas"><h3>Semanas de vida</h3><p id="prod-semanas">0</p></div>
-                        <div class="metrica tipo-alimento"><h3>Alimento Hoy</h3><p id="prod-alimento">--</p></div>
-                        <div class="metrica huevos-cantidad"><h3>Huevos Lote Hoy</h3><p id="prod-huevos-hoy">0</p></div>
-                        <div class="metrica porcentaje-produccion"><h3>Producción Ideal</h3><p id="prod-porcentaje-ideal">0%</p></div>
-                        <div class="metrica horas-luz"><h3>Horas Luz</h3><p id="prod-horas-luz">0 h</p></div>
-                        <div class="metrica consumo"><h3>Consumo ave/día</h3><p id="prod-consumo">0 g</p></div>
-                    </div>
-                </div>
-                
-                <button class="btn-eliminar" onclick="eliminarLote()">❌ Eliminar lote actual</button>
             </div>
+
+            <div id="resumen-produccion" style="display:none;">
+                <div class="metricas">
+                    <div class="metrica vivos"><h3>Aves vivas</h3><p id="prod-vivos">0</p></div>
+                    <div class="metrica muertos"><h3>Mortalidad</h3><p id="prod-muertos">0</p></div>
+                    <div class="metrica semanas"><h3>Semanas de vida</h3><p id="prod-semanas">0</p></div>
+                    <div class="metrica tipo-alimento"><h3>Alimento Hoy</h3><p id="prod-alimento">--</p></div>
+                    <div class="metrica huevos-cantidad"><h3>Huevos Lote Hoy</h3><p id="prod-huevos-hoy">0</p></div>
+                    <div class="metrica porcentaje-produccion"><h3>Producción Ideal</h3><p id="prod-porcentaje-ideal">0%</p></div>
+                    <div class="metrica horas-luz"><h3>Horas Luz</h3><p id="prod-horas-luz">0 h</p></div>
+                    <div class="metrica consumo"><h3>Consumo ave/día</h3><p id="prod-consumo">--</p></div>
+                </div>
+            </div>
+
+            <button class="btn-eliminar" onclick="eliminarLote()">❌ Eliminar lote actual</button>
         </div>
-        
-        <div id="produccion" class="tab-content">
-            <div class="card">
-                <h3>Proyección de Producción de Huevos del Lote</h3>
-                 <div class="tabla-container">
-                    <table id="tabla-produccion">
-                         <thead>
-                            <tr>
-                                <th>Semana</th>
-                                <th>Producción (% HD)</th>
-                                <th>Huevos Semanales Lote</th>
-                                <th>Huevos Lote Acum.</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+    </div>
 
-        <div id="consumo" class="tab-content">
-             <div class="card">
-                <h3>Proyección de Consumo de Alimento del Lote</h3>
-                <div class="tabla-container">
-                    <table id="tabla-consumo">
-                        <thead>
-                            <tr>
-                                <th>Semana</th>
-                                <th>Tipo de Alimento</th>
-                                <th>Consumo Lote Semanal (kg)</th>
-                                <th>Consumo Lote Acum. (kg)</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="pesos" class="tab-content">
-            <div class="card">
-                <h3>Proyección de Peso Corporal (por ave)</h3>
-                <div class="tabla-container">
-                    <table id="tabla-pesos">
-                         <thead>
-                            <tr>
-                                <th>Semana</th>
-                                <th>Peso Objetivo (g)</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="mortalidad" class="tab-content">
-            <div class="card">
-                <h3>Registrar mortalidad</h3>
-                <input type="number" id="muertos-hoy" placeholder="Aves muertas hoy" min="1">
-                <button class="btn-registrar" onclick="registrarMuertos()">✍️ Registrar</button>
-            </div>
-            <div class="card">
-                <h3>Historial de mortalidad</h3>
-                <div class="historial-mortalidad" id="historial-mortalidad">
-                    <p>No hay registros de mortalidad</p>
-                </div>
+    <div id="produccion" class="tab-content">
+        <div class="card">
+            <h3>Proyección de Producción de Huevos del Lote</h3>
+            <div class="tabla-container">
+                <table id="tabla-produccion">
+                    <thead>
+                    <tr>
+                        <th>Semana</th>
+                        <th>Producción (% HD)</th>
+                        <th>Huevos Semanales Lote</th>
+                        <th>Huevos Lote Acum.</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <script>
-        // --- SECCIÓN DE CONFIGURACIÓN Y DATOS ---
-        let datos = JSON.parse(localStorage.getItem('gallinasApp')) || {
-            avesIniciales: 0,
-            avesMuertas: 0,
-            fechaInicio: null,
-            historialMortalidad: []
+    <div id="consumo" class="tab-content">
+        <div class="card">
+            <h3>Proyección de Consumo de Alimento del Lote (Hy-Line)</h3>
+            <div class="tabla-container">
+                <table id="tabla-consumo">
+                    <thead>
+                    <tr>
+                        <th>Semana</th>
+                        <th>Tipo de Alimento</th>
+                        <th>Consumo Prom. (g/ave/día)</th>
+                        <th>Consumo Lote Semanal (kg)</th>
+                        <th>Consumo Lote Acum. (kg)</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="pesos" class="tab-content">
+        <div class="card">
+            <h3>Proyección de Peso Corporal (por ave)</h3>
+            <div class="tabla-container">
+                <table id="tabla-pesos">
+                    <thead>
+                    <tr>
+                        <th>Semana</th>
+                        <th>Peso Objetivo (g)</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="mortalidad" class="tab-content">
+        <div class="card">
+            <h3>Registrar mortalidad</h3>
+            <input type="number" id="muertos-hoy" placeholder="Aves muertas hoy" min="1">
+            <button class="btn-registrar" onclick="registrarMuertos()">✍️ Registrar</button>
+        </div>
+        <div class="card">
+            <h3>Historial de mortalidad</h3>
+            <div class="historial-mortalidad" id="historial-mortalidad">
+                <p>No hay registros de mortalidad</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- DATOS (localStorage) ---
+    let datos = JSON.parse(localStorage.getItem('gallinasApp')) || {
+        avesIniciales: 0,
+        avesMuertas: 0,
+        fechaInicio: null,
+        historialMortalidad: []
+    };
+
+    const CICLO_SEMANAS = 100;
+    const SEMANA_INICIO_PRODUCCION = 18;
+
+    // Tu tabla original (se usa para peso objetivo y % postura ideal en la tabla de producción)
+    // OJO: tu tabla original era 90 semanas; yo la dejo tal cual y si se pasa, se “trunca” al final.
+    const DATOS_SEMANALES = [
+        [1, 14, 70, 0], [2, 23, 140, 0], [3, 31, 225, 0], [4, 38, 320, 0], [5, 45, 420, 0],
+        [6, 51, 525, 0], [7, 57, 630, 0], [8, 62, 740, 0], [9, 67, 845, 0], [10, 71, 950, 0],
+        [11, 75, 1045, 0], [12, 79, 1135, 0], [13, 83, 1215, 0], [14, 87, 1290, 0], [15, 92, 1355, 0],
+        [16, 97, 1410, 0], [17, 102, 1460, 0], [18, 105, 1510, 5], [19, 108, 1560, 25], [20, 110, 1610, 55],
+        [21, 112, 1655, 78], [22, 114, 1690, 88], [23, 115, 1720, 93], [24, 116, 1745, 95], [25, 117, 1765, 96],
+        [26, 117, 1780, 96.5], [27, 117, 1795, 96.5], [28, 118, 1805, 96], [29, 118, 1815, 96], [30, 118, 1825, 95.5],
+        [31, 118, 1830, 95], [32, 118, 1835, 95], [33, 118, 1840, 94.5], [34, 118, 1845, 94.5], [35, 118, 1850, 94],
+        [36, 117, 1855, 94], [37, 117, 1860, 93.5], [38, 117, 1865, 93.5], [39, 117, 1870, 93], [40, 117, 1875, 93],
+        [41, 117, 1880, 92.5], [42, 117, 1885, 92], [43, 116, 1890, 92], [44, 116, 1895, 91.5], [45, 116, 1900, 91],
+        [46, 116, 1900, 91], [47, 116, 1905, 90.5], [48, 116, 1905, 90], [49, 115, 1910, 90], [50, 115, 1910, 89.5],
+        [51, 115, 1915, 89], [52, 115, 1915, 88.5], [53, 115, 1920, 88.5], [54, 115, 1920, 88], [55, 114, 1920, 87.5],
+        [56, 114, 1925, 87], [57, 114, 1925, 86.5], [58, 114, 1925, 86], [59, 114, 1930, 85.5], [60, 113, 1930, 85],
+        [61, 113, 1930, 84.5], [62, 113, 1935, 84], [63, 113, 1935, 83.5], [64, 113, 1935, 83], [65, 113, 1940, 82.5],
+        [66, 112, 1940, 82], [67, 112, 1940, 81.5], [68, 112, 1940, 80.5], [69, 112, 1945, 80], [70, 112, 1945, 79.5],
+        [71, 111, 1945, 79], [72, 111, 1950, 78], [73, 111, 1950, 77.5], [74, 111, 1950, 77], [75, 111, 1950, 76],
+        [76, 110, 1955, 75.5], [77, 110, 1955, 74.5], [78, 110, 1955, 74], [79, 110, 1955, 73], [80, 110, 1960, 72.5],
+        [81, 109, 1960, 71.5], [82, 109, 1960, 71], [83, 109, 1960, 70], [84, 109, 1965, 69.5], [85, 109, 1965, 68.5],
+        [86, 108, 1965, 67.5], [87, 108, 1970, 66.5], [88, 108, 1970, 65.5], [89, 108, 1970, 64.5], [90, 108, 1970, 63.5]
+    ];
+
+    const TEMPERATURA_IDEAL_LEVANTE = [34, 31, 29, 27, 25, 23];
+    const HUMEDAD_IDEAL_LEVANTE = [65, 65, 60, 60, 55, 55];
+
+    const HORAS_LUZ_SEMANALES = [
+        22, 16, 14, 12, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+        11, 12, 13, 14, 15, 15.5, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+        16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+        16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+        16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+        16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+        16, 16, 16, 16
+    ];
+
+    // --- NUEVO: Tipo de alimento por SEMANA (simple para clientes) ---
+    function getTipoAlimento(semana) {
+        if (semana >= 1 && semana <= 3) return "Iniciación 1";
+        if (semana >= 4 && semana <= 6) return "Iniciación 2";
+        if (semana >= 7 && semana <= 12) return "Crecimiento";
+        if (semana >= 13 && semana <= 15) return "Desarrollo";
+        if (semana >= 16 && semana <= 17) return "Pre-Postura";
+        if (semana >= 18) return "Postura";
+        return "--";
+    }
+
+    // --- NUEVO: Consumo ideal Hy-Line (promedio del rango) g/ave/día ---
+    function getConsumoIdealGAveDia(semana) {
+        const levante = {
+            1: 13.0,   // 12–14
+            2: 19.0,   // 17–21
+            3: 22.5,   // 20–25
+            4: 27.5,   // 25–30
+            5: 32.5,   // 29–36
+            6: 39.5,   // 35–44
+            7: 45.0,   // 41–49
+            8: 51.5,   // 47–56
+            9: 56.5,   // 52–61
+            10: 60.0,  // 56–64
+            11: 64.5,  // 60–69
+            12: 67.0,  // 62–72
+            13: 69.0,  // 64–74
+            14: 71.5,  // 66–77
+            15: 73.5,  // 68–79
+            16: 76.0,  // 70–82
+            17: 78.5   // 72–85
         };
 
-        const CICLO_SEMANAS = 90;
-        const SEMANA_INICIO_PRODUCCION = 18;
+        const inicioPostura = {
+            18: 80.5,  // 73–88
+            19: 89.5,  // 85–94
+            20: 94.5,  // 90–99
+            21: 99.0,  // 95–103
+            22: 103.0, // 99–107
+            23: 106.5, // 102–111
+            24: 110.0  // 106–114
+        };
 
-        const DATOS_SEMANALES = [
-            [1, 14, 70, 0], [2, 23, 140, 0], [3, 31, 225, 0], [4, 38, 320, 0],
-            [5, 45, 420, 0], [6, 51, 525, 0], [7, 57, 630, 0], [8, 62, 740, 0],
-            [9, 67, 845, 0], [10, 71, 950, 0], [11, 75, 1045, 0], [12, 79, 1135, 0],
-            [13, 83, 1215, 0], [14, 87, 1290, 0], [15, 92, 1355, 0], [16, 97, 1410, 0],
-            [17, 102, 1460, 0], [18, 105, 1510, 5], [19, 108, 1560, 25], [20, 110, 1610, 55],
-            [21, 112, 1655, 78], [22, 114, 1690, 88], [23, 115, 1720, 93], [24, 116, 1745, 95],
-            [25, 117, 1765, 96], [26, 117, 1780, 96.5], [27, 117, 1795, 96.5], [28, 118, 1805, 96],
-            [29, 118, 1815, 96], [30, 118, 1825, 95.5], [31, 118, 1830, 95], [32, 118, 1835, 95],
-            [33, 118, 1840, 94.5], [34, 118, 1845, 94.5], [35, 118, 1850, 94], [36, 117, 1855, 94],
-            [37, 117, 1860, 93.5], [38, 117, 1865, 93.5], [39, 117, 1870, 93], [40, 117, 1875, 93],
-            [41, 117, 1880, 92.5], [42, 117, 1885, 92], [43, 116, 1890, 92], [44, 116, 1895, 91.5],
-            [45, 116, 1900, 91], [46, 116, 1900, 91], [47, 116, 1905, 90.5], [48, 116, 1905, 90],
-            [49, 115, 1910, 90], [50, 115, 1910, 89.5], [51, 115, 1915, 89], [52, 115, 1915, 88.5],
-            [53, 115, 1920, 88.5], [54, 115, 1920, 88], [55, 114, 1920, 87.5], [56, 114, 1925, 87],
-            [57, 114, 1925, 86.5], [58, 114, 1925, 86], [59, 114, 1930, 85.5], [60, 113, 1930, 85],
-            [61, 113, 1930, 84.5], [62, 113, 1935, 84], [63, 113, 1935, 83.5], [64, 113, 1935, 83],
-            [65, 113, 1940, 82.5], [66, 112, 1940, 82], [67, 112, 1940, 81.5], [68, 112, 1940, 80.5],
-            [69, 112, 1945, 80], [70, 112, 1945, 79.5], [71, 111, 1945, 79], [72, 111, 1950, 78],
-            [73, 111, 1950, 77.5], [74, 111, 1950, 77], [75, 111, 1950, 76], [76, 110, 1955, 75.5],
-            [77, 110, 1955, 74.5], [78, 110, 1955, 74], [79, 110, 1955, 73], [80, 110, 1960, 72.5],
-            [81, 109, 1960, 71.5], [82, 109, 1960, 71], [83, 109, 1960, 70], [84, 109, 1965, 69.5],
-            [85, 109, 1965, 68.5], [86, 108, 1965, 67.5], [87, 108, 1970, 66.5], [88, 108, 1970, 65.5],
-            [89, 108, 1970, 64.5], [90, 108, 1970, 63.5]
-        ];
+        if (semana >= 1 && semana <= 17) return levante[semana] ?? null;
+        if (semana >= 18 && semana <= 24) return inicioPostura[semana] ?? null;
 
-        const TEMPERATURA_IDEAL_LEVANTE = [34, 31, 29, 27, 25, 23];
-        const HUMEDAD_IDEAL_LEVANTE = [65, 65, 60, 60, 55, 55];
+        // 25+ => 108–116 => promedio 112
+        if (semana >= 25) return 112.0;
 
-        const HORAS_LUZ_SEMANALES = [
-            22, 16, 14, 12, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-            11, 12, 13, 14, 15, 15.5, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
-            16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
-            16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
-            16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
-            16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16
-        ];
+        return null;
+    }
 
-        function getTipoAlimento(semana) {
-            if (semana >= 1 && semana <= 4) return "Inicio";
-            if (semana >= 5 && semana <= 17) return "Crecimiento";
-            if (semana >= 18) return "Postura";
-            return "--";
+    // --- Helpers ---
+    function guardarDatos() {
+        localStorage.setItem('gallinasApp', JSON.stringify(datos));
+    }
+
+    // --- Actualizar resumen ---
+    function actualizar() {
+        const tieneLoteIniciado = datos.fechaInicio !== null && datos.avesIniciales > 0;
+        document.getElementById('formulario-inicio').style.display = tieneLoteIniciado ? 'none' : 'block';
+        document.getElementById('resumen-lote').style.display = tieneLoteIniciado ? 'block' : 'none';
+        if (!tieneLoteIniciado) return;
+
+        const hoy = new Date();
+        const fechaInicioLote = new Date(datos.fechaInicio);
+
+        // (4) Evitar días negativos
+        const diasTranscurridosRaw = Math.floor((hoy - fechaInicioLote) / (1000 * 60 * 60 * 24));
+        const diasTranscurridos = Math.max(0, diasTranscurridosRaw);
+
+        const semanaActual = Math.max(1, Math.floor(diasTranscurridos / 7) + 1);
+        const semanaIndex = Math.max(0, Math.min(semanaActual - 1, DATOS_SEMANALES.length - 1)); // para peso/% (tu tabla llega a 90)
+
+        const avesVivasActuales = datos.avesIniciales - datos.avesMuertas;
+        const datosSemanaActual = DATOS_SEMANALES[semanaIndex];
+        const alimentoActual = getTipoAlimento(semanaActual);
+
+        const progresoPorcentaje = Math.min((semanaActual / CICLO_SEMANAS) * 100, 100);
+        document.getElementById('progreso-lote').style.width = `${progresoPorcentaje}%`;
+
+        const consumoIdeal = getConsumoIdealGAveDia(semanaActual);
+        const consumoTexto = (consumoIdeal !== null) ? `${consumoIdeal.toFixed(1)} g` : "--";
+
+        if (semanaActual < SEMANA_INICIO_PRODUCCION) {
+            document.getElementById('resumen-levante').style.display = 'block';
+            document.getElementById('resumen-produccion').style.display = 'none';
+
+            document.getElementById('titulo-resumen').textContent = `Resumen de Levante (Semana ${semanaActual})`;
+            document.getElementById('levante-vivos').textContent = avesVivasActuales;
+            document.getElementById('levante-muertos').textContent = datos.avesMuertas;
+            document.getElementById('levante-dias').textContent = diasTranscurridos;
+
+            document.getElementById('levante-consumo').textContent = consumoTexto;
+            document.getElementById('levante-peso').textContent = `${datosSemanaActual[2]} g`;
+            document.getElementById('levante-alimento').textContent = alimentoActual;
+
+            const temp = (semanaIndex < TEMPERATURA_IDEAL_LEVANTE.length) ? `${TEMPERATURA_IDEAL_LEVANTE[semanaIndex]}°C` : 'Ambiente';
+            const humedad = (semanaIndex < HUMEDAD_IDEAL_LEVANTE.length) ? `${HUMEDAD_IDEAL_LEVANTE[semanaIndex]}%` : 'Ambiente';
+            document.getElementById('levante-temp').textContent = temp;
+            document.getElementById('levante-humedad').textContent = humedad;
+        } else {
+            document.getElementById('resumen-levante').style.display = 'none';
+            document.getElementById('resumen-produccion').style.display = 'block';
+
+            document.getElementById('titulo-resumen').textContent = `Resumen de Producción (Semana ${semanaActual})`;
+            document.getElementById('prod-vivos').textContent = avesVivasActuales;
+            document.getElementById('prod-muertos').textContent = datos.avesMuertas;
+            document.getElementById('prod-semanas').textContent = semanaActual > CICLO_SEMANAS ? `${CICLO_SEMANAS} (Fin)` : semanaActual;
+
+            document.getElementById('prod-consumo').textContent = consumoTexto;
+            document.getElementById('prod-alimento').textContent = alimentoActual;
+
+            const porcentajeProduccion = datosSemanaActual[3];
+            const huevosEsperadosHoy = Math.round(avesVivasActuales * (porcentajeProduccion / 100));
+            const horasLuz = HORAS_LUZ_SEMANALES[Math.min(semanaIndex, HORAS_LUZ_SEMANALES.length - 1)];
+
+            document.getElementById('prod-huevos-hoy').textContent = huevosEsperadosHoy;
+            document.getElementById('prod-porcentaje-ideal').textContent = `${porcentajeProduccion}%`;
+            document.getElementById('prod-horas-luz').textContent = `${horasLuz} h`;
         }
+    }
 
-        // --- LÓGICA PRINCIPAL DE LA APLICACIÓN ---
-        function actualizar() {
-            const tieneLoteIniciado = datos.fechaInicio !== null && datos.avesIniciales > 0;
-            document.getElementById('formulario-inicio').style.display = tieneLoteIniciado ? 'none' : 'block';
-            document.getElementById('resumen-lote').style.display = tieneLoteIniciado ? 'block' : 'none';
-            if (!tieneLoteIniciado) return;
-            
-            const hoy = new Date();
-            const fechaInicioLote = new Date(datos.fechaInicio);
+    // --- Tabs ---
+    function mostrarTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        document.querySelector(`.tab[onclick="mostrarTab('${tabId}')"]`).classList.add('active');
+        actualizarHistorialMortalidad();
+    }
 
-            // (4) Evitar días negativos si alguien pone fecha futura
-            const diasTranscurridosRaw = Math.floor((hoy - fechaInicioLote) / (1000 * 60 * 60 * 24));
-            const diasTranscurridos = Math.max(0, diasTranscurridosRaw);
+    // --- Poblar tablas ---
+    function poblarTablasProyeccion(numAves = 1) {
+        const tablaConsumoBody = document.querySelector('#tabla-consumo tbody');
+        const tablaProduccionBody = document.querySelector('#tabla-produccion tbody');
+        const tablaPesosBody = document.querySelector('#tabla-pesos tbody');
 
-            const semanaActual = Math.max(1, Math.floor(diasTranscurridos / 7) + 1);
-            const semanaIndex = Math.min(semanaActual - 1, CICLO_SEMANAS - 1);
-            
-            const avesVivasActuales = datos.avesIniciales - datos.avesMuertas;
-            const datosSemanaActual = DATOS_SEMANALES[semanaIndex];
-            const alimentoActual = getTipoAlimento(semanaActual);
+        tablaConsumoBody.innerHTML = '';
+        tablaProduccionBody.innerHTML = '';
+        tablaPesosBody.innerHTML = '';
 
-            const progresoPorcentaje = Math.min((semanaActual / CICLO_SEMANAS) * 100, 100);
-            document.getElementById('progreso-lote').style.width = `${progresoPorcentaje}%`;
+        let consumoAcumuladoKg = 0;
+        let huevosAcumulados = 0;
 
-            if (semanaActual < SEMANA_INICIO_PRODUCCION) {
-                document.getElementById('resumen-levante').style.display = 'block';
-                document.getElementById('resumen-produccion').style.display = 'none';
-                document.getElementById('titulo-resumen').textContent = `Resumen de Levante (Semana ${semanaActual})`;
-                document.getElementById('levante-vivos').textContent = avesVivasActuales;
-                document.getElementById('levante-muertos').textContent = datos.avesMuertas;
-                document.getElementById('levante-dias').textContent = diasTranscurridos;
-                document.getElementById('levante-consumo').textContent = `${datosSemanaActual[1]} g`;
-                document.getElementById('levante-peso').textContent = `${datosSemanaActual[2]} g`;
-                document.getElementById('levante-alimento').textContent = alimentoActual;
+        for (let semanaNum = 1; semanaNum <= CICLO_SEMANAS; semanaNum++) {
+            const i = Math.min(semanaNum - 1, DATOS_SEMANALES.length - 1);
+            const [, _consumoViejo, pesoObjetivo, posturaPorc] = DATOS_SEMANALES[i];
 
-                const temp = (semanaIndex < TEMPERATURA_IDEAL_LEVANTE.length) ? `${TEMPERATURA_IDEAL_LEVANTE[semanaIndex]}°C` : 'Ambiente';
-                const humedad = (semanaIndex < HUMEDAD_IDEAL_LEVANTE.length) ? `${HUMEDAD_IDEAL_LEVANTE[semanaIndex]}%` : 'Ambiente';
-                document.getElementById('levante-temp').textContent = temp;
-                document.getElementById('levante-humedad').textContent = humedad;
-            } else {
-                document.getElementById('resumen-levante').style.display = 'none';
-                document.getElementById('resumen-produccion').style.display = 'block';
-                document.getElementById('titulo-resumen').textContent = `Resumen de Producción (Semana ${semanaActual})`;
-                document.getElementById('prod-vivos').textContent = avesVivasActuales;
-                document.getElementById('prod-muertos').textContent = datos.avesMuertas;
-                document.getElementById('prod-semanas').textContent = semanaActual > CICLO_SEMANAS ? `${CICLO_SEMANAS} (Fin)` : semanaActual;
-                document.getElementById('prod-consumo').textContent = `${datosSemanaActual[1]} g`;
-                document.getElementById('prod-alimento').textContent = alimentoActual;
+            const tipoAlimento = getTipoAlimento(semanaNum);
 
-                const porcentajeProduccion = datosSemanaActual[3];
-                const huevosEsperadosHoy = Math.round(avesVivasActuales * (porcentajeProduccion / 100));
-                const horasLuz = HORAS_LUZ_SEMANALES[semanaIndex];
-                document.getElementById('prod-huevos-hoy').textContent = huevosEsperadosHoy;
-                document.getElementById('prod-porcentaje-ideal').textContent = `${porcentajeProduccion}%`;
-                document.getElementById('prod-horas-luz').textContent = `${horasLuz} h`;
-            }
-        }
-        
-        function guardarDatos() {
-            localStorage.setItem('gallinasApp', JSON.stringify(datos));
-        }
+            // --- TABLA CONSUMO (Hy-Line real) ---
+            const consumoDiarioIdeal = getConsumoIdealGAveDia(semanaNum); // g/ave/día
+            const consumoDiarioTexto = (consumoDiarioIdeal !== null) ? consumoDiarioIdeal.toFixed(1) : "--";
 
-        function mostrarTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            document.querySelector(`.tab[onclick="mostrarTab('${tabId}')"]`).classList.add('active');
-            actualizarHistorialMortalidad();
-        }
+            const consumoSemanalLoteKg = (consumoDiarioIdeal !== null)
+                ? (consumoDiarioIdeal * 7 * numAves) / 1000
+                : 0;
 
-        function poblarTablasProyeccion(numAves = 1) {
-            const tablaConsumoBody = document.querySelector('#tabla-consumo tbody');
-            const tablaProduccionBody = document.querySelector('#tabla-produccion tbody');
-            const tablaPesosBody = document.querySelector('#tabla-pesos tbody');
-            
-            tablaConsumoBody.innerHTML = '';
-            tablaProduccionBody.innerHTML = '';
-            tablaPesosBody.innerHTML = '';
+            consumoAcumuladoKg += consumoSemanalLoteKg;
 
-            let consumoAcumuladoKg = 0;
-            let huevosAcumulados = 0;
+            tablaConsumoBody.innerHTML += `<tr>
+                <td>${semanaNum}</td>
+                <td>${tipoAlimento}</td>
+                <td>${consumoDiarioTexto}</td>
+                <td>${consumoSemanalLoteKg.toFixed(2)}</td>
+                <td>${consumoAcumuladoKg.toFixed(2)}</td>
+            </tr>`;
 
-            for (let i = 0; i < CICLO_SEMANAS; i++) {
-                const [semanaNum, consumoDiario, pesoObjetivo, posturaPorc] = DATOS_SEMANALES[i];
-                const tipoAlimento = getTipoAlimento(semanaNum);
-                
-                // Tabla de Consumo
-                const consumoSemanalLoteKg = (consumoDiario * 7 * numAves) / 1000;
-                consumoAcumuladoKg += consumoSemanalLoteKg;
+            // --- TABLA PRODUCCIÓN (tu lógica con "--" antes de semana 18) ---
+            let huevosSemanalesTexto = "--";
+            let huevosAcumuladosTexto = "--";
 
-                tablaConsumoBody.innerHTML += `<tr>
-                    <td>${semanaNum}</td>
-                    <td>${tipoAlimento}</td>
-                    <td>${consumoSemanalLoteKg.toFixed(2)}</td>
-                    <td>${consumoAcumuladoKg.toFixed(2)}</td>
-                </tr>`;
-
-                // (3) Tabla de Producción: antes de semana 18 mostrar "--"
-                let huevosSemanalesLote = 0;
-                let huevosSemanalesTexto = "--";
-                let huevosAcumuladosTexto = "--";
-
-                if (semanaNum >= SEMANA_INICIO_PRODUCCION) {
-                    huevosSemanalesLote = (posturaPorc / 100) * 7 * numAves;
-                    huevosAcumulados += huevosSemanalesLote;
-                    huevosSemanalesTexto = Math.round(huevosSemanalesLote);
-                    huevosAcumuladosTexto = Math.round(huevosAcumulados);
-                }
-
-                tablaProduccionBody.innerHTML += `<tr>
-                    <td>${semanaNum}</td>
-                    <td>${posturaPorc}%</td>
-                    <td>${huevosSemanalesTexto}</td>
-                    <td>${huevosAcumuladosTexto}</td>
-                </tr>`;
-
-                // Tabla de Pesos (por ave)
-                tablaPesosBody.innerHTML += `<tr><td>${semanaNum}</td><td>${pesoObjetivo} g</td></tr>`;
-            }
-        }
-
-        function actualizarHistorialMortalidad() {
-            const historialDiv = document.getElementById('historial-mortalidad');
-            if (!historialDiv) return;
-
-            if (datos.historialMortalidad.length === 0) {
-                historialDiv.innerHTML = '<p>No hay registros</p>';
-            } else {
-                const historialOrdenado = datos.historialMortalidad
-                    .slice()
-                    .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-
-                historialDiv.innerHTML = historialOrdenado.map(item => `
-                    <div class="historial-item">
-                        <span>${new Date(item.fecha + "T00:00:00").toLocaleDateString()}</span>
-                        <span>${item.cantidad} aves</span>
-                    </div>`).join('');
-            }
-        }
-
-        function iniciarLote() {
-            const cantidad = parseInt(document.getElementById('aves-iniciales').value);
-            const fecha = document.getElementById('fecha-inicio').value;
-
-            if (isNaN(cantidad) || cantidad <= 0 || !fecha) {
-                alert('Por favor, ingrese una cantidad de aves válida y una fecha de inicio.');
-                return;
+            if (semanaNum >= SEMANA_INICIO_PRODUCCION) {
+                const huevosSemanalesLote = (posturaPorc / 100) * 7 * numAves;
+                huevosAcumulados += huevosSemanalesLote;
+                huevosSemanalesTexto = Math.round(huevosSemanalesLote);
+                huevosAcumuladosTexto = Math.round(huevosAcumulados);
             }
 
-            datos = { avesIniciales: cantidad, avesMuertas: 0, fechaInicio: fecha, historialMortalidad: [] };
+            tablaProduccionBody.innerHTML += `<tr>
+                <td>${semanaNum}</td>
+                <td>${(semanaNum >= SEMANA_INICIO_PRODUCCION) ? `${posturaPorc}%` : "0%"}</td>
+                <td>${huevosSemanalesTexto}</td>
+                <td>${huevosAcumuladosTexto}</td>
+            </tr>`;
+
+            // --- TABLA PESOS (por ave, usando tu tabla) ---
+            tablaPesosBody.innerHTML += `<tr>
+                <td>${semanaNum}</td>
+                <td>${pesoObjetivo} g</td>
+            </tr>`;
+        }
+    }
+
+    // --- Historial mortalidad ---
+    function actualizarHistorialMortalidad() {
+        const historialDiv = document.getElementById('historial-mortalidad');
+        if (!historialDiv) return;
+
+        if (datos.historialMortalidad.length === 0) {
+            historialDiv.innerHTML = '<p>No hay registros</p>';
+            return;
+        }
+
+        const historialOrdenado = datos.historialMortalidad
+            .slice()
+            .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+        historialDiv.innerHTML = historialOrdenado.map(item => `
+            <div class="historial-item">
+                <span>${new Date(item.fecha + "T00:00:00").toLocaleDateString()}</span>
+                <span>${item.cantidad} aves</span>
+            </div>
+        `).join('');
+    }
+
+    // --- Acciones ---
+    function iniciarLote() {
+        const cantidad = parseInt(document.getElementById('aves-iniciales').value);
+        const fecha = document.getElementById('fecha-inicio').value;
+
+        if (isNaN(cantidad) || cantidad <= 0 || !fecha) {
+            alert('Por favor, ingrese una cantidad de aves válida y una fecha de inicio.');
+            return;
+        }
+
+        datos = { avesIniciales: cantidad, avesMuertas: 0, fechaInicio: fecha, historialMortalidad: [] };
+        guardarDatos();
+
+        poblarTablasProyeccion(cantidad);
+        actualizar();
+
+        alert(`¡Lote iniciado con ${cantidad} aves! Las tablas de proyección han sido actualizadas.`);
+    }
+
+    function registrarMuertos() {
+        const muertosInput = document.getElementById('muertos-hoy');
+        const muertos = parseInt(muertosInput.value);
+
+        if (isNaN(muertos) || muertos <= 0) {
+            alert('Ingrese un número válido.');
+            return;
+        }
+        if (!datos.fechaInicio) {
+            alert('Debe iniciar un lote.');
+            return;
+        }
+
+        const avesVivasActuales = datos.avesIniciales - datos.avesMuertas;
+        if (avesVivasActuales < muertos) {
+            alert(`No puedes registrar ${muertos} muertes. Solo quedan ${avesVivasActuales} aves vivas.`);
+            return;
+        }
+
+        datos.avesMuertas += muertos;
+
+        // (1) Fecha LOCAL sin UTC
+        const hoyLocal = new Date();
+        const yyyy = hoyLocal.getFullYear();
+        const mm = String(hoyLocal.getMonth() + 1).padStart(2, '0');
+        const dd = String(hoyLocal.getDate()).padStart(2, '0');
+        const fechaLocal = `${yyyy}-${mm}-${dd}`;
+
+        datos.historialMortalidad.push({ fecha: fechaLocal, cantidad: muertos });
+
+        guardarDatos();
+        actualizar();
+        actualizarHistorialMortalidad();
+
+        muertosInput.value = '';
+        alert(`Registradas ${muertos} aves muertas.`);
+    }
+
+    function eliminarLote() {
+        if (confirm('¿Estás seguro de eliminar el lote actual?')) {
+            datos = { avesIniciales: 0, avesMuertas: 0, fechaInicio: null, historialMortalidad: [] };
             guardarDatos();
 
-            poblarTablasProyeccion(cantidad);
+            poblarTablasProyeccion(1);
             actualizar();
+            actualizarHistorialMortalidad();
 
-            alert(`¡Lote iniciado con ${cantidad} aves! Las tablas de proyección han sido actualizadas.`);
-        }
-
-        function registrarMuertos() {
+            // (6) Limpiar input
             const muertosInput = document.getElementById('muertos-hoy');
-            const muertos = parseInt(muertosInput.value);
+            if (muertosInput) muertosInput.value = '';
 
-            if (isNaN(muertos) || muertos <= 0) {
-                alert('Ingrese un número válido.');
-                return;
-            }
-            if (!datos.fechaInicio) {
-                alert('Debe iniciar un lote.');
-                return;
-            }
-
-            const avesVivasActuales = datos.avesIniciales - datos.avesMuertas;
-            if (avesVivasActuales < muertos) {
-                alert(`No puedes registrar ${muertos} muertes. Solo quedan ${avesVivasActuales} aves vivas.`);
-                return;
-            }
-
-            datos.avesMuertas += muertos;
-
-            // (1) Guardar fecha LOCAL (YYYY-MM-DD) para evitar desfase por UTC
-            const hoyLocal = new Date();
-            const yyyy = hoyLocal.getFullYear();
-            const mm = String(hoyLocal.getMonth() + 1).padStart(2, '0');
-            const dd = String(hoyLocal.getDate()).padStart(2, '0');
-            const fechaLocal = `${yyyy}-${mm}-${dd}`;
-
-            datos.historialMortalidad.push({ fecha: fechaLocal, cantidad: muertos });
-
-            guardarDatos();
-            actualizar();
-            actualizarHistorialMortalidad();
-
-            muertosInput.value = '';
-            alert(`Registradas ${muertos} aves muertas.`);
+            alert('Lote eliminado.');
         }
+    }
 
-        function eliminarLote() {
-            if (confirm('¿Estás seguro de eliminar el lote actual?')) {
-                datos = { avesIniciales: 0, avesMuertas: 0, fechaInicio: null, historialMortalidad: [] };
-                guardarDatos();
+    // --- Inicialización ---
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('fecha-inicio').valueAsDate = new Date();
 
-                poblarTablasProyeccion(1);
-                actualizar();
-
-                // (6) Limpiar input de muertos
-                const muertosInput = document.getElementById('muertos-hoy');
-                if (muertosInput) muertosInput.value = '';
-
-                actualizarHistorialMortalidad();
-                alert('Lote eliminado.');
-            }
-        }
-
-        // --- INICIALIZACIÓN ---
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('fecha-inicio').valueAsDate = new Date();
-
-            // Carga las tablas con la cantidad de aves del lote guardado, o con 1 por defecto
-            poblarTablasProyeccion(datos.avesIniciales > 0 ? datos.avesIniciales : 1);
-
-            mostrarTab('resumen');
-            actualizar();
-        });
-    </script>
+        poblarTablasProyeccion(datos.avesIniciales > 0 ? datos.avesIniciales : 1);
+        mostrarTab('resumen');
+        actualizar();
+    });
+</script>
 </body>
 </html>
