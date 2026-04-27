@@ -132,6 +132,12 @@ button:hover { opacity: 0.9; }
 .btn-eliminar { background: #f72585; }
 .btn-registrar { background: #b5651d; }
 .btn-secundario { background: #4361ee; }
+.btn-ir-resumen {
+  background: linear-gradient(45deg, #ff7b00, #b5651d);
+  box-shadow: 0 6px 14px rgba(181, 101, 29, 0.35);
+  font-size: 17px;
+  padding: 14px;
+}
 
 /* Tablas */
 .tabla-container {
@@ -208,19 +214,25 @@ th {
 </head><body>
   <div class="container">
     <h1>🐔 MANEJO DE GALLINAS HY-LINE BROWN</h1><div class="tabs">
-  <div class="tab active" onclick="mostrarTab('resumen')">Resumen</div>
+  <div class="tab active" onclick="mostrarTab('lote')">Lote</div>
+  <div class="tab" onclick="mostrarTab('resumen')">Resumen</div>
   <div class="tab" onclick="mostrarTab('produccion')">Producción Huevos</div>
   <div class="tab" onclick="mostrarTab('consumo')">Consumo Alimento</div>
   <div class="tab" onclick="mostrarTab('pesos')">Peso Corporal</div>
   <div class="tab" onclick="mostrarTab('mortalidad')">Mortalidad</div>
 </div>
-
-<!-- RESUMEN -->
-<div id="resumen" class="tab-content active">
+<!-- LOTE -->
+<div id="lote" class="tab-content active">
   <div class="card">
+    <h3>🐔 Gestión de Lote</h3>
+    <p class="texto-ayuda">Primero crea o selecciona un lote. Luego entra al resumen para ver producción, alimento, mortalidad y avance.</p>
+  </div>
+
+  <div id="card-seleccionar-lote" class="card" style="display:none;">
     <h3>Seleccionar lote / cliente</h3>
     <select id="selector-lote" onchange="cambiarLote()"></select>
-    <p class="texto-ayuda">Puedes crear varios lotes para distintos clientes o galpones. El lote seleccionado controla todas las pestañas.</p>
+    <p class="texto-ayuda">Por defecto se carga el último lote usado.</p>
+    <button class="btn-secundario btn-ir-resumen" onclick="irResumenLote()">📊 Ver resumen del lote seleccionado</button>
   </div>
 
   <div id="formulario-inicio" class="card">
@@ -230,6 +242,10 @@ th {
     <input type="date" id="fecha-inicio" />
     <button class="btn-iniciar" onclick="iniciarLote()">🟢 Crear Lote</button>
   </div>
+</div>
+
+<!-- RESUMEN -->
+<div id="resumen" class="tab-content">
 
   <div id="resumen-lote" class="card" style="display:none;">
     <h3 id="titulo-resumen">Resumen del Lote</h3>
@@ -495,6 +511,15 @@ th {
       }
     }
 
+    function irResumenLote() {
+      const lote = getLoteActivo();
+      if (!lote) {
+        alert('Primero crea o selecciona un lote.');
+        return;
+      }
+      mostrarTab('resumen');
+    }
+
     // --- Postura 1–5 por semanas ---
     function getFasePostura(semana) {
       if (semana < 18) return null;
@@ -606,6 +631,11 @@ th {
     function actualizar() {
       const lote = getLoteActivo();
       const tieneLoteIniciado = lote !== null && lote.fechaInicio !== null && lote.avesIniciales > 0;
+
+      const cardSeleccionarLote = document.getElementById('card-seleccionar-lote');
+      if (cardSeleccionarLote) {
+        cardSeleccionarLote.style.display = appData.lotes.length > 0 ? 'block' : 'none';
+      }
 
       document.getElementById('resumen-lote').style.display = tieneLoteIniciado ? 'block' : 'none';
 
@@ -964,7 +994,7 @@ th {
       }
 
       actualizarTodo();
-      mostrarTab('resumen');
+      mostrarTab('lote');
     });
   </script></body>
 </html>
