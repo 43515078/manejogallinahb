@@ -61,7 +61,10 @@
 
 /* Contenido de Tabs */
 .tab-content { display: none; }
-.tab-content.active { display: block; }
+.tab-content.active {
+  display: block;
+  animation: entradaSuave 0.32s ease both;
+}
 
 /* Cards */
 .card {
@@ -71,6 +74,7 @@
   margin-bottom: 24px;
   box-shadow: 0 14px 32px rgba(31, 45, 61, 0.11);
   border: 1px solid rgba(255,255,255,0.75);
+  animation: entradaSuave 0.38s ease both;
 }
 
 .card h3 {
@@ -102,7 +106,8 @@
   align-items: center;
   min-height: 118px;
   box-shadow: 0 10px 22px rgba(31,45,61,0.16);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
+  animation: aparecerTarjeta 0.45s ease both;
 }
 .metrica::after {
   content: '';
@@ -112,24 +117,36 @@
   pointer-events: none;
 }
 .metrica:hover {
-  transform: translateY(-2px) scale(1.01);
-  box-shadow: 0 14px 28px rgba(31,45,61,0.20);
+  transform: translateY(-3px) scale(1.015);
+  box-shadow: 0 16px 30px rgba(31,45,61,0.22);
+  filter: saturate(1.08);
 }
 .metrica h3 {
   margin: 0 0 10px 0;
-  font-size: 1.02rem;
-  line-height: 1.18;
+  font-size: clamp(1rem, 3.2vw, 1.18rem);
+  line-height: 1.08;
   color: inherit;
   position: relative;
   z-index: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.12);
 }
 .metrica p {
   margin: 0;
-  font-size: 2rem;
-  line-height: 1.05;
-  letter-spacing: -0.5px;
+  font-size: clamp(1.85rem, 7vw, 2.55rem);
+  line-height: 1.02;
+  letter-spacing: -0.8px;
   position: relative;
   z-index: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-shadow: 0 3px 6px rgba(0,0,0,0.16);
+  animation: pulsoDato 0.55s ease both;
 }
 
 /* Colores Métricas */
@@ -178,8 +195,12 @@ button {
   transition: transform 0.15s ease, opacity 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 8px 18px rgba(31,45,61,0.14);
 }
-button:hover { opacity: 0.95; transform: translateY(-1px); }
-button:active { transform: translateY(1px); }
+button:hover {
+  opacity: 0.95;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(31,45,61,0.18);
+}
+button:active { transform: translateY(1px) scale(0.99); }
 .btn-iniciar { background: linear-gradient(135deg, #00b894, #00cec9); }
 .btn-eliminar { background: linear-gradient(135deg, #ff416c, #d90429); }
 .btn-registrar { background: linear-gradient(135deg, #b5651d, #f77f00); }
@@ -252,9 +273,11 @@ th {
 .progress {
   height: 100%;
   background: linear-gradient(90deg, #4361ee, #4facfe, #00f2fe);
+  background-size: 200% 100%;
   width: 0%;
   transition: width 0.5s ease-out;
   border-radius: 999px;
+  animation: brilloProgreso 2.2s linear infinite;
 }
 
 .texto-ayuda {
@@ -270,9 +293,30 @@ th {
   .card { padding: 22px; border-radius: 20px; }
   .metricas { gap: 14px; }
   .metrica { min-height: 108px; padding: 20px 10px; }
-  .metrica h3 { font-size: 0.95rem; }
-  .metrica p { font-size: 1.75rem; }
+  .metrica h3 { font-size: clamp(0.98rem, 3.8vw, 1.08rem); }
+  .metrica p { font-size: clamp(1.75rem, 7.2vw, 2.35rem); }
   .tab { padding: 11px 15px; }
+}
+
+@keyframes entradaSuave {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes aparecerTarjeta {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes pulsoDato {
+  0% { transform: scale(0.94); opacity: 0.75; }
+  70% { transform: scale(1.035); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes brilloProgreso {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
 }
 
   </style>
@@ -324,8 +368,8 @@ th {
         <div class="metrica vivos"><h3>Aves vivas</h3><p id="levante-vivos">0</p></div>
         <div class="metrica muertos"><h3>Mortalidad</h3><p id="levante-muertos">0</p></div>
         <div class="metrica dias"><h3>Días de vida</h3><p id="levante-dias">0</p></div>
-        <div class="metrica tipo-alimento"><h3>Alimento Hoy</h3><p id="levante-alimento">--</p></div>
-        <div class="metrica proximo-alimento"><h3>Próximo Alimento</h3><p id="levante-proximo-alimento">--</p></div>
+        <div class="metrica tipo-alimento"><h3>Alimento hoy</h3><p id="levante-alimento">--</p></div>
+        <div class="metrica proximo-alimento"><h3>Próximo alim.</h3><p id="levante-proximo-alimento">--</p></div>
         <div class="metrica consumo"><h3>Consumo hoy</h3><p id="levante-consumo">--</p></div>
         <div class="metrica peso-objetivo"><h3>Peso objetivo</h3><p id="levante-peso">0 g</p></div>
         <div class="metrica temperatura"><h3>Temperatura Ideal</h3><p id="levante-temp">0°C</p></div>
@@ -339,12 +383,12 @@ th {
         <div class="metrica vivos"><h3>Aves vivas</h3><p id="prod-vivos">0</p></div>
         <div class="metrica muertos"><h3>Mortalidad</h3><p id="prod-muertos">0</p></div>
         <div class="metrica semanas"><h3>Semanas de vida</h3><p id="prod-semanas">0</p></div>
-        <div class="metrica tipo-alimento"><h3>Alimento Hoy</h3><p id="prod-alimento">--</p></div>
-        <div class="metrica proximo-alimento"><h3>Próximo Alimento</h3><p id="prod-proximo-alimento">--</p></div>
-        <div class="metrica huevos-cantidad"><h3>Huevos Ideal Hoy</h3><p id="prod-huevos-hoy">0</p></div>
-        <div class="metrica huevos-cantidad"><h3>Huevos Real Hoy</h3><p id="prod-huevos-real-hoy">0</p></div>
-        <div class="metrica porcentaje-produccion"><h3>Producción Ideal</h3><p id="prod-porcentaje-ideal">0%</p></div>
-        <div class="metrica porcentaje-produccion"><h3>Producción Real</h3><p id="prod-real">0%</p></div>
+        <div class="metrica tipo-alimento"><h3>Alimento hoy</h3><p id="prod-alimento">--</p></div>
+        <div class="metrica proximo-alimento"><h3>Próximo alim.</h3><p id="prod-proximo-alimento">--</p></div>
+        <div class="metrica huevos-cantidad"><h3>Huevos ideal</h3><p id="prod-huevos-hoy">0</p></div>
+        <div class="metrica huevos-cantidad"><h3>Huevos real</h3><p id="prod-huevos-real-hoy">0</p></div>
+        <div class="metrica porcentaje-produccion"><h3>Prod. ideal</h3><p id="prod-porcentaje-ideal">0%</p></div>
+        <div class="metrica porcentaje-produccion"><h3>Prod. real</h3><p id="prod-real">0%</p></div>
         <div class="metrica porcentaje-produccion" id="card-diferencia-produccion"><h3>Diferencia</h3><p id="prod-diferencia">0%</p></div>
         <div class="metrica horas-luz"><h3>Horas Luz</h3><p id="prod-horas-luz">0 h</p></div>
         <div class="metrica consumo"><h3>Consumo hoy</h3><p id="prod-consumo">--</p></div>
@@ -597,8 +641,8 @@ th {
 
     // --- Tipo de alimento por semana ---
     function getTipoAlimento(semana) {
-      if (semana >= 1 && semana <= 3) return 'Iniciación 1';
-      if (semana >= 4 && semana <= 6) return 'Iniciación 2';
+      if (semana >= 1 && semana <= 3) return 'Inicio 1';
+      if (semana >= 4 && semana <= 6) return 'Inicio 2';
       if (semana >= 7 && semana <= 12) return 'Crecimiento';
       if (semana >= 13 && semana <= 15) return 'Desarrollo';
       if (semana >= 16 && semana <= 17) return 'Pre-Postura';
