@@ -374,7 +374,7 @@ th {
         <div class="metrica tipo-alimento"><h3>Alimento hoy</h3><p id="levante-alimento">--</p></div>
         <div class="metrica proximo-alimento"><h3>Próximo alim.</h3><p id="levante-proximo-alimento">--</p></div>
         <div class="metrica consumo"><h3>Consumo hoy</h3><p id="levante-consumo">--</p></div>
-        <div class="metrica peso-objetivo"><h3>Peso objetivo</h3><p id="levante-peso">0 g</p></div>
+        <div class="metrica peso-objetivo"><h3 id="levante-peso-titulo">Peso objetivo</h3><p id="levante-peso">0 g</p></div>
         <div class="metrica temperatura"><h3>Temperatura Ideal</h3><p id="levante-temp">0°C</p></div>
         <div class="metrica humedad"><h3>Humedad Ideal</h3><p id="levante-humedad">0%</p></div>
       </div>
@@ -675,10 +675,15 @@ th {
       if (!fechaInicio) return '--';
 
       const inicio = fechaInicioSemana(fechaInicio, semana);
-      const fin = new Date(inicio);
-      fin.setDate(fin.getDate() + 6);
+      const fin = getFechaFinSemana(fechaInicio, semana);
 
       return `${formatearFechaCorta(inicio)} - ${formatearFechaCorta(fin)}`;
+    }
+
+    function getFechaFinSemana(fechaInicio, semana) {
+      const fecha = new Date(fechaInicio + 'T00:00:00');
+      fecha.setDate(fecha.getDate() + (semana * 7) - 1);
+      return fecha;
     }
 
     function formatearFechaCorta(fecha) {
@@ -794,10 +799,13 @@ th {
         document.getElementById('levante-alimento').textContent = alimentoActual;
         document.getElementById('levante-proximo-alimento').textContent = textoProximoAlimento;
         document.getElementById('levante-consumo').textContent = consumoLoteTexto;
+
+        const fechaFinSemana = formatearFechaCorta(getFechaFinSemana(lote.fechaInicio, semanaActual));
+        document.getElementById('levante-peso-titulo').textContent = `Peso obj. al ${fechaFinSemana}`;
         document.getElementById('levante-peso').textContent = `${datosSemanaActual[2]} g`;
 
-        const temp = (semanaIndex < TEMPERATURA_IDEAL_LEVANTE.length) ? `${TEMPERATURA_IDEAL_LEVANTE[semanaIndex]}°C` : 'Ambiente';
-        const humedad = (semanaIndex < HUMEDAD_IDEAL_LEVANTE.length) ? `${HUMEDAD_IDEAL_LEVANTE[semanaIndex]}%` : 'Ambiente';
+        const temp = (semanaIndex < TEMPERATURA_IDEAL_LEVANTE.length) ? `${TEMPERATURA_IDEAL_LEVANTE[semanaIndex]}°C` : '21 - 24°C';
+        const humedad = (semanaIndex < HUMEDAD_IDEAL_LEVANTE.length) ? `${HUMEDAD_IDEAL_LEVANTE[semanaIndex]}%` : '50 - 60%';
         document.getElementById('levante-temp').textContent = temp;
         document.getElementById('levante-humedad').textContent = humedad;
       } else {
