@@ -61,6 +61,11 @@
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
+.card h3 {
+  margin-top: 0;
+  color: #5c3a21;
+}
+
 /* Métricas */
 .metricas {
   display: grid;
@@ -80,7 +85,7 @@
   align-items: center;
   min-height: 90px;
 }
-.metrica h3 { margin: 0 0 5px 0; font-size: 1em; }
+.metrica h3 { margin: 0 0 5px 0; font-size: 1em; color: inherit; }
 .metrica p { margin: 0; font-size: 1.3em; }
 
 /* Colores Métricas */
@@ -97,9 +102,10 @@
 .horas-luz { background: linear-gradient(45deg, #ffdd00, #fbb034); color: #333; }
 .tipo-alimento { background: linear-gradient(45deg, #a67c52, #8c6239); }
 .proximo-alimento { background: linear-gradient(45deg, #2d6a4f, #40916c); }
+.lote-activo { background: linear-gradient(45deg, #5c3a21, #b5651d); }
 
-/* Inputs y botones */
-input {
+/* Inputs, selects y botones */
+input, select {
   width: 100%;
   padding: 12px;
   border-radius: 8px;
@@ -107,6 +113,7 @@ input {
   margin: 8px 0;
   font-size: 16px;
   box-sizing: border-box;
+  background: white;
 }
 button {
   width: 100%;
@@ -120,14 +127,17 @@ button {
   font-size: 16px;
   transition: opacity 0.2s ease;
 }
+button:hover { opacity: 0.9; }
 .btn-iniciar { background: #b5651d; }
 .btn-eliminar { background: #f72585; }
 .btn-registrar { background: #b5651d; }
+.btn-secundario { background: #4361ee; }
 
 /* Tablas */
 .tabla-container {
   max-height: 400px;
   overflow-y: auto;
+  overflow-x: auto;
   border: 1px solid #eee;
   border-radius: 8px;
 }
@@ -135,6 +145,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9em;
+  min-width: 650px;
 }
 th, td {
   padding: 12px;
@@ -146,10 +157,11 @@ th {
   font-weight: bold;
   position: sticky;
   top: 0;
+  z-index: 1;
 }
 
-/* Historial mortalidad */
-.historial-mortalidad {
+/* Historial */
+.historial-mortalidad, .historial-produccion {
   max-height: 300px;
   overflow-y: auto;
   border: 1px solid #eee;
@@ -161,9 +173,10 @@ th {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
 }
 .historial-item:last-child { border-bottom: none; }
-.historial-mortalidad p {
+.historial-mortalidad p, .historial-produccion p {
   text-align: center;
   color: #666;
   padding: 20px;
@@ -184,6 +197,13 @@ th {
   transition: width 0.5s ease-out;
 }
 
+.texto-ayuda {
+  font-size: 0.9em;
+  color: #666;
+  margin-top: 5px;
+  line-height: 1.4;
+}
+
   </style>
 </head><body>
   <div class="container">
@@ -197,11 +217,18 @@ th {
 
 <!-- RESUMEN -->
 <div id="resumen" class="tab-content active">
+  <div class="card">
+    <h3>Seleccionar lote / cliente</h3>
+    <select id="selector-lote" onchange="cambiarLote()"></select>
+    <p class="texto-ayuda">Puedes crear varios lotes para distintos clientes o galpones. El lote seleccionado controla todas las pestañas.</p>
+  </div>
+
   <div id="formulario-inicio" class="card">
-    <h3>Iniciar nuevo lote</h3>
+    <h3>Crear nuevo lote</h3>
+    <input type="text" id="nombre-lote" placeholder="Nombre del lote o cliente. Ej: Cliente Juan - Galpón 1" />
     <input type="number" id="aves-iniciales" placeholder="Cantidad de aves iniciales" min="1" />
     <input type="date" id="fecha-inicio" />
-    <button class="btn-iniciar" onclick="iniciarLote()">🟢 Iniciar Lote</button>
+    <button class="btn-iniciar" onclick="iniciarLote()">🟢 Crear Lote</button>
   </div>
 
   <div id="resumen-lote" class="card" style="display:none;">
@@ -212,6 +239,7 @@ th {
 
     <div id="resumen-levante" style="display:none;">
       <div class="metricas">
+        <div class="metrica lote-activo"><h3>Lote activo</h3><p id="levante-nombre-lote">--</p></div>
         <div class="metrica vivos"><h3>Aves vivas</h3><p id="levante-vivos">0</p></div>
         <div class="metrica muertos"><h3>Mortalidad</h3><p id="levante-muertos">0</p></div>
         <div class="metrica dias"><h3>Días de vida</h3><p id="levante-dias">0</p></div>
@@ -226,13 +254,17 @@ th {
 
     <div id="resumen-produccion" style="display:none;">
       <div class="metricas">
+        <div class="metrica lote-activo"><h3>Lote activo</h3><p id="prod-nombre-lote">--</p></div>
         <div class="metrica vivos"><h3>Aves vivas</h3><p id="prod-vivos">0</p></div>
         <div class="metrica muertos"><h3>Mortalidad</h3><p id="prod-muertos">0</p></div>
         <div class="metrica semanas"><h3>Semanas de vida</h3><p id="prod-semanas">0</p></div>
         <div class="metrica tipo-alimento"><h3>Alimento Hoy</h3><p id="prod-alimento">--</p></div>
         <div class="metrica proximo-alimento"><h3>Próximo Alimento</h3><p id="prod-proximo-alimento">--</p></div>
-        <div class="metrica huevos-cantidad"><h3>Huevos Lote Hoy</h3><p id="prod-huevos-hoy">0</p></div>
+        <div class="metrica huevos-cantidad"><h3>Huevos Ideal Hoy</h3><p id="prod-huevos-hoy">0</p></div>
+        <div class="metrica huevos-cantidad"><h3>Huevos Real Hoy</h3><p id="prod-huevos-real-hoy">0</p></div>
         <div class="metrica porcentaje-produccion"><h3>Producción Ideal</h3><p id="prod-porcentaje-ideal">0%</p></div>
+        <div class="metrica porcentaje-produccion"><h3>Producción Real</h3><p id="prod-real">0%</p></div>
+        <div class="metrica porcentaje-produccion" id="card-diferencia-produccion"><h3>Diferencia</h3><p id="prod-diferencia">0%</p></div>
         <div class="metrica horas-luz"><h3>Horas Luz</h3><p id="prod-horas-luz">0 h</p></div>
         <div class="metrica consumo"><h3>Consumo Lote/día</h3><p id="prod-consumo">--</p></div>
       </div>
@@ -244,6 +276,19 @@ th {
 
 <!-- PRODUCCIÓN -->
 <div id="produccion" class="tab-content">
+  <div class="card">
+    <h3>Registrar Producción Real</h3>
+    <input type="number" id="huevos-hoy" placeholder="Huevos recolectados hoy" min="0" />
+    <button class="btn-registrar" onclick="registrarHuevos()">🥚 Registrar Producción</button>
+  </div>
+
+  <div class="card">
+    <h3>Historial de producción real</h3>
+    <div class="historial-produccion" id="historial-produccion">
+      <p>No hay registros de producción</p>
+    </div>
+  </div>
+
   <div class="card">
     <h3>Proyección de Producción de Huevos del Lote</h3>
     <div class="tabla-container">
@@ -325,12 +370,7 @@ th {
 
   </div>  <script>
     // --- DATOS (localStorage) ---
-    let datos = JSON.parse(localStorage.getItem('gallinasApp')) || {
-      avesIniciales: 0,
-      avesMuertas: 0,
-      fechaInicio: null,
-      historialMortalidad: []
-    };
+    let appData = cargarAppData();
 
     const CICLO_SEMANAS = 100;
     const SEMANA_INICIO_PRODUCCION = 18;
@@ -370,27 +410,112 @@ th {
       16, 16, 16, 16
     ];
 
+    // --- Migración para usuarios que tenían la versión antigua de 1 solo lote ---
+    function cargarAppData() {
+      const guardado = JSON.parse(localStorage.getItem('gallinasApp'));
+
+      if (!guardado) {
+        return { lotes: [], loteActivo: null };
+      }
+
+      if (Array.isArray(guardado.lotes)) {
+        guardado.lotes = guardado.lotes.map(lote => normalizarLote(lote));
+        return guardado;
+      }
+
+      if (guardado.fechaInicio && guardado.avesIniciales) {
+        const loteMigrado = normalizarLote({
+          id: Date.now(),
+          nombre: 'Lote migrado',
+          avesIniciales: guardado.avesIniciales || 0,
+          avesMuertas: guardado.avesMuertas || 0,
+          fechaInicio: guardado.fechaInicio || null,
+          historialMortalidad: guardado.historialMortalidad || [],
+          historialProduccion: guardado.historialProduccion || []
+        });
+
+        return {
+          lotes: [loteMigrado],
+          loteActivo: loteMigrado.id
+        };
+      }
+
+      return { lotes: [], loteActivo: null };
+    }
+
+    function normalizarLote(lote) {
+      return {
+        id: lote.id || Date.now(),
+        nombre: lote.nombre || 'Lote sin nombre',
+        avesIniciales: lote.avesIniciales || 0,
+        avesMuertas: lote.avesMuertas || 0,
+        fechaInicio: lote.fechaInicio || null,
+        historialMortalidad: lote.historialMortalidad || [],
+        historialProduccion: lote.historialProduccion || []
+      };
+    }
+
+    function getLoteActivo() {
+      return appData.lotes.find(lote => lote.id === appData.loteActivo) || null;
+    }
+
+    function guardarAppData() {
+      localStorage.setItem('gallinasApp', JSON.stringify(appData));
+    }
+
+    function cargarSelectorLotes() {
+      const selector = document.getElementById('selector-lote');
+      selector.innerHTML = '';
+
+      if (appData.lotes.length === 0) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'No hay lotes creados';
+        selector.appendChild(option);
+        return;
+      }
+
+      appData.lotes.forEach(lote => {
+        const option = document.createElement('option');
+        option.value = lote.id;
+        option.textContent = lote.nombre;
+        if (lote.id === appData.loteActivo) option.selected = true;
+        selector.appendChild(option);
+      });
+    }
+
+    function cambiarLote() {
+      const selector = document.getElementById('selector-lote');
+      const nuevoId = parseInt(selector.value);
+
+      if (!isNaN(nuevoId)) {
+        appData.loteActivo = nuevoId;
+        guardarAppData();
+        actualizarTodo();
+      }
+    }
+
     // --- Postura 1–5 por semanas ---
     function getFasePostura(semana) {
       if (semana < 18) return null;
-      if (semana >= 18 && semana <= 25) return "Postura 1";
-      if (semana >= 26 && semana <= 40) return "Postura 2";
-      if (semana >= 41 && semana <= 55) return "Postura 3";
-      if (semana >= 56 && semana <= 70) return "Postura 4";
-      return "Postura 5";
+      if (semana >= 18 && semana <= 25) return 'Postura 1';
+      if (semana >= 26 && semana <= 40) return 'Postura 2';
+      if (semana >= 41 && semana <= 55) return 'Postura 3';
+      if (semana >= 56 && semana <= 70) return 'Postura 4';
+      return 'Postura 5';
     }
 
     // --- Tipo de alimento por semana ---
     function getTipoAlimento(semana) {
-      if (semana >= 1 && semana <= 3) return "Iniciación 1";
-      if (semana >= 4 && semana <= 6) return "Iniciación 2";
-      if (semana >= 7 && semana <= 12) return "Crecimiento";
-      if (semana >= 13 && semana <= 15) return "Desarrollo";
-      if (semana >= 16 && semana <= 17) return "Pre-Postura";
-      return getFasePostura(semana) || "Postura";
+      if (semana >= 1 && semana <= 3) return 'Iniciación 1';
+      if (semana >= 4 && semana <= 6) return 'Iniciación 2';
+      if (semana >= 7 && semana <= 12) return 'Crecimiento';
+      if (semana >= 13 && semana <= 15) return 'Desarrollo';
+      if (semana >= 16 && semana <= 17) return 'Pre-Postura';
+      return getFasePostura(semana) || 'Postura';
     }
 
-    // --- NUEVO: detectar próximo cambio de alimento ---
+    // --- Detectar próximo cambio de alimento ---
     function getProximoAlimento(tipoActual, semanaActual) {
       for (let s = semanaActual + 1; s <= CICLO_SEMANAS; s++) {
         const tipo = getTipoAlimento(s);
@@ -401,16 +526,16 @@ th {
       return null;
     }
 
-    // --- NUEVO: fecha de inicio de una semana del lote ---
+    // --- Fecha de inicio de una semana del lote ---
     function fechaInicioSemana(fechaInicio, semana) {
-      const fecha = new Date(fechaInicio + "T00:00:00");
+      const fecha = new Date(fechaInicio + 'T00:00:00');
       fecha.setDate(fecha.getDate() + ((semana - 1) * 7));
       return fecha;
     }
 
-    // --- NUEVO: rango de fechas por semana ---
+    // --- Rango de fechas por semana ---
     function getRangoFechaSemana(fechaInicio, semana) {
-      if (!fechaInicio) return "--";
+      if (!fechaInicio) return '--';
 
       const inicio = fechaInicioSemana(fechaInicio, semana);
       const fin = new Date(inicio);
@@ -426,9 +551,9 @@ th {
       });
     }
 
-    function formatearProximoAlimento(proximo) {
-      if (!proximo || !datos.fechaInicio) return "No hay cambio";
-      const fecha = fechaInicioSemana(datos.fechaInicio, proximo.semana);
+    function formatearProximoAlimento(lote, proximo) {
+      if (!proximo || !lote || !lote.fechaInicio) return 'No hay cambio';
+      const fecha = fechaInicioSemana(lote.fechaInicio, proximo.semana);
       return `${proximo.tipo} ${formatearFechaCorta(fecha)}`;
     }
 
@@ -448,28 +573,51 @@ th {
       return null;
     }
 
-    // --- Helpers ---
-    function guardarDatos() {
-      localStorage.setItem('gallinasApp', JSON.stringify(datos));
+    function getFechaLocalHoy() {
+      const hoyLocal = new Date();
+      const yyyy = hoyLocal.getFullYear();
+      const mm = String(hoyLocal.getMonth() + 1).padStart(2, '0');
+      const dd = String(hoyLocal.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
     }
 
+    // --- Tabs ---
     function mostrarTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
       document.querySelector(`.tab[onclick="mostrarTab('${tabId}')"]`).classList.add('active');
       actualizarHistorialMortalidad();
+      actualizarHistorialProduccion();
+    }
+
+    // --- Actualizar toda la app ---
+    function actualizarTodo() {
+      cargarSelectorLotes();
+      const lote = getLoteActivo();
+      const avesParaTablas = lote ? Math.max(0, lote.avesIniciales - lote.avesMuertas) : 1;
+      poblarTablasProyeccion(avesParaTablas);
+      actualizar();
+      actualizarHistorialMortalidad();
+      actualizarHistorialProduccion();
     }
 
     // --- Actualizar Resumen ---
     function actualizar() {
-      const tieneLoteIniciado = datos.fechaInicio !== null && datos.avesIniciales > 0;
-      document.getElementById('formulario-inicio').style.display = tieneLoteIniciado ? 'none' : 'block';
+      const lote = getLoteActivo();
+      const tieneLoteIniciado = lote !== null && lote.fechaInicio !== null && lote.avesIniciales > 0;
+
       document.getElementById('resumen-lote').style.display = tieneLoteIniciado ? 'block' : 'none';
-      if (!tieneLoteIniciado) return;
+
+      if (!tieneLoteIniciado) {
+        document.getElementById('progreso-lote').style.width = '0%';
+        document.getElementById('resumen-levante').style.display = 'none';
+        document.getElementById('resumen-produccion').style.display = 'none';
+        return;
+      }
 
       const hoy = new Date();
-      const fechaInicioLote = new Date(datos.fechaInicio + "T00:00:00");
+      const fechaInicioLote = new Date(lote.fechaInicio + 'T00:00:00');
 
       const diasTranscurridosRaw = Math.floor((hoy - fechaInicioLote) / (1000 * 60 * 60 * 24));
       const diasTranscurridos = Math.max(0, diasTranscurridosRaw);
@@ -477,12 +625,12 @@ th {
       const semanaActual = Math.max(1, Math.floor(diasTranscurridos / 7) + 1);
       const semanaIndex = Math.max(0, Math.min(semanaActual - 1, DATOS_SEMANALES.length - 1));
 
-      const avesVivasActuales = datos.avesIniciales - datos.avesMuertas;
+      const avesVivasActuales = Math.max(0, lote.avesIniciales - lote.avesMuertas);
       const datosSemanaActual = DATOS_SEMANALES[semanaIndex];
       const alimentoActual = getTipoAlimento(semanaActual);
 
       const proximoAlimento = getProximoAlimento(alimentoActual, semanaActual);
-      const textoProximoAlimento = formatearProximoAlimento(proximoAlimento);
+      const textoProximoAlimento = formatearProximoAlimento(lote, proximoAlimento);
 
       const progresoPorcentaje = Math.min((semanaActual / CICLO_SEMANAS) * 100, 100);
       document.getElementById('progreso-lote').style.width = `${progresoPorcentaje}%`;
@@ -490,15 +638,16 @@ th {
       // Consumo lote/día (kg)
       const consumoGAveDia = getConsumoIdealGAveDia(semanaActual);
       const consumoLoteDiaKg = (consumoGAveDia !== null) ? (consumoGAveDia * avesVivasActuales) / 1000 : null;
-      const consumoLoteTexto = (consumoLoteDiaKg !== null) ? `${consumoLoteDiaKg.toFixed(2)} kg` : "--";
+      const consumoLoteTexto = (consumoLoteDiaKg !== null) ? `${consumoLoteDiaKg.toFixed(2)} kg` : '--';
 
       if (semanaActual < SEMANA_INICIO_PRODUCCION) {
         document.getElementById('resumen-levante').style.display = 'block';
         document.getElementById('resumen-produccion').style.display = 'none';
 
         document.getElementById('titulo-resumen').textContent = `Resumen de Levante (Semana ${semanaActual})`;
+        document.getElementById('levante-nombre-lote').textContent = lote.nombre;
         document.getElementById('levante-vivos').textContent = avesVivasActuales;
-        document.getElementById('levante-muertos').textContent = datos.avesMuertas;
+        document.getElementById('levante-muertos').textContent = lote.avesMuertas;
         document.getElementById('levante-dias').textContent = diasTranscurridos;
         document.getElementById('levante-alimento').textContent = alimentoActual;
         document.getElementById('levante-proximo-alimento').textContent = textoProximoAlimento;
@@ -514,8 +663,9 @@ th {
         document.getElementById('resumen-produccion').style.display = 'block';
 
         document.getElementById('titulo-resumen').textContent = `Resumen de Producción (Semana ${semanaActual})`;
+        document.getElementById('prod-nombre-lote').textContent = lote.nombre;
         document.getElementById('prod-vivos').textContent = avesVivasActuales;
-        document.getElementById('prod-muertos').textContent = datos.avesMuertas;
+        document.getElementById('prod-muertos').textContent = lote.avesMuertas;
         document.getElementById('prod-semanas').textContent = semanaActual > CICLO_SEMANAS ? `${CICLO_SEMANAS} (Fin)` : semanaActual;
 
         document.getElementById('prod-alimento').textContent = alimentoActual;
@@ -526,14 +676,38 @@ th {
         const huevosEsperadosHoy = Math.round(avesVivasActuales * (porcentajeProduccion / 100));
         const horasLuz = HORAS_LUZ_SEMANALES[Math.min(semanaIndex, HORAS_LUZ_SEMANALES.length - 1)];
 
+        const fechaHoy = getFechaLocalHoy();
+        const produccionDeHoy = (lote.historialProduccion || [])
+          .filter(item => item.fecha === fechaHoy)
+          .reduce((total, item) => total + item.huevos, 0);
+
+        const produccionRealPorc = avesVivasActuales > 0 ? (produccionDeHoy / avesVivasActuales) * 100 : 0;
+        const diferenciaProduccion = produccionRealPorc - porcentajeProduccion;
+
         document.getElementById('prod-huevos-hoy').textContent = huevosEsperadosHoy;
+        document.getElementById('prod-huevos-real-hoy').textContent = produccionDeHoy;
         document.getElementById('prod-porcentaje-ideal').textContent = `${porcentajeProduccion}%`;
+        document.getElementById('prod-real').textContent = `${produccionRealPorc.toFixed(1)}%`;
+
+        const diferenciaElem = document.getElementById('prod-diferencia');
+        const cardDiferencia = document.getElementById('card-diferencia-produccion');
+        diferenciaElem.textContent = `${diferenciaProduccion.toFixed(1)}%`;
+
+        if (diferenciaProduccion >= -2) {
+          cardDiferencia.style.background = 'linear-gradient(45deg, #2a9d8f, #52b788)';
+        } else if (diferenciaProduccion >= -5) {
+          cardDiferencia.style.background = 'linear-gradient(45deg, #f4a261, #e9c46a)';
+        } else {
+          cardDiferencia.style.background = 'linear-gradient(45deg, #e63946, #9d0208)';
+        }
+
         document.getElementById('prod-horas-luz').textContent = `${horasLuz} h`;
       }
     }
 
     // --- Poblar Tablas ---
     function poblarTablasProyeccion(numAves = 1) {
+      const lote = getLoteActivo();
       const tablaConsumoBody = document.querySelector('#tabla-consumo tbody');
       const tablaProduccionBody = document.querySelector('#tabla-produccion tbody');
       const tablaPesosBody = document.querySelector('#tabla-pesos tbody');
@@ -550,11 +724,11 @@ th {
         const [, , pesoObjetivo, posturaPorc] = DATOS_SEMANALES[i];
 
         const tipoAlimento = getTipoAlimento(semanaNum);
-        const rangoFechas = getRangoFechaSemana(datos.fechaInicio, semanaNum);
+        const rangoFechas = lote ? getRangoFechaSemana(lote.fechaInicio, semanaNum) : '--';
 
         // CONSUMO (Hy-Line)
         const consumoDiarioIdeal = getConsumoIdealGAveDia(semanaNum);
-        const consumoDiarioTexto = (consumoDiarioIdeal !== null) ? consumoDiarioIdeal.toFixed(1) : "--";
+        const consumoDiarioTexto = (consumoDiarioIdeal !== null) ? consumoDiarioIdeal.toFixed(1) : '--';
         const consumoSemanalLoteKg = (consumoDiarioIdeal !== null)
           ? (consumoDiarioIdeal * 7 * numAves) / 1000
           : 0;
@@ -571,12 +745,12 @@ th {
         </tr>`;
 
         // PRODUCCIÓN (huevos diarios + bandejas/paquetes en decimales)
-        let huevosDiariosTexto = "--";
-        let bandejasTexto = "--";
-        let paquetesTexto = "--";
-        let huevosSemanalesTexto = "--";
-        let huevosAcumuladosTexto = "--";
-        let produccionTexto = "0%";
+        let huevosDiariosTexto = '--';
+        let bandejasTexto = '--';
+        let paquetesTexto = '--';
+        let huevosSemanalesTexto = '--';
+        let huevosAcumuladosTexto = '--';
+        let produccionTexto = '0%';
 
         if (semanaNum >= SEMANA_INICIO_PRODUCCION) {
           produccionTexto = `${posturaPorc}%`;
@@ -618,96 +792,163 @@ th {
       }
     }
 
-    // --- Mortalidad ---
+    // --- Historial mortalidad ---
     function actualizarHistorialMortalidad() {
+      const lote = getLoteActivo();
       const historialDiv = document.getElementById('historial-mortalidad');
       if (!historialDiv) return;
 
-      if (datos.historialMortalidad.length === 0) {
+      if (!lote || !lote.historialMortalidad || lote.historialMortalidad.length === 0) {
         historialDiv.innerHTML = '<p>No hay registros</p>';
         return;
       }
 
-      const historialOrdenado = datos.historialMortalidad
+      const historialOrdenado = lote.historialMortalidad
         .slice()
         .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
       historialDiv.innerHTML = historialOrdenado.map(item => `
         <div class="historial-item">
-          <span>${new Date(item.fecha + "T00:00:00").toLocaleDateString()}</span>
+          <span>${new Date(item.fecha + 'T00:00:00').toLocaleDateString()}</span>
           <span>${item.cantidad} aves</span>
+        </div>
+      `).join('');
+    }
+
+    // --- Historial producción ---
+    function actualizarHistorialProduccion() {
+      const lote = getLoteActivo();
+      const historialDiv = document.getElementById('historial-produccion');
+      if (!historialDiv) return;
+
+      if (!lote || !lote.historialProduccion || lote.historialProduccion.length === 0) {
+        historialDiv.innerHTML = '<p>No hay registros de producción</p>';
+        return;
+      }
+
+      const historialOrdenado = lote.historialProduccion
+        .slice()
+        .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+      historialDiv.innerHTML = historialOrdenado.map(item => `
+        <div class="historial-item">
+          <span>${new Date(item.fecha + 'T00:00:00').toLocaleDateString()}</span>
+          <span>${item.huevos} huevos</span>
         </div>
       `).join('');
     }
 
     // --- Acciones ---
     function iniciarLote() {
-      const cantidad = parseInt(document.getElementById('aves-iniciales').value);
-      const fecha = document.getElementById('fecha-inicio').value;
+      const nombreInput = document.getElementById('nombre-lote');
+      const cantidadInput = document.getElementById('aves-iniciales');
+      const fechaInput = document.getElementById('fecha-inicio');
+
+      const nombre = nombreInput.value.trim() || `Lote ${appData.lotes.length + 1}`;
+      const cantidad = parseInt(cantidadInput.value);
+      const fecha = fechaInput.value;
 
       if (isNaN(cantidad) || cantidad <= 0 || !fecha) {
         alert('Por favor, ingrese una cantidad de aves válida y una fecha de inicio.');
         return;
       }
 
-      datos = { avesIniciales: cantidad, avesMuertas: 0, fechaInicio: fecha, historialMortalidad: [] };
-      guardarDatos();
+      const nuevoLote = {
+        id: Date.now(),
+        nombre,
+        avesIniciales: cantidad,
+        avesMuertas: 0,
+        fechaInicio: fecha,
+        historialMortalidad: [],
+        historialProduccion: []
+      };
 
-      poblarTablasProyeccion(cantidad);
-      actualizar();
+      appData.lotes.push(nuevoLote);
+      appData.loteActivo = nuevoLote.id;
+      guardarAppData();
 
-      alert(`¡Lote iniciado con ${cantidad} aves! Las tablas de proyección han sido actualizadas.`);
+      nombreInput.value = '';
+      cantidadInput.value = '';
+      fechaInput.valueAsDate = new Date();
+
+      actualizarTodo();
+      alert(`¡Lote "${nombre}" creado con ${cantidad} aves!`);
     }
 
     function registrarMuertos() {
+      const lote = getLoteActivo();
       const muertosInput = document.getElementById('muertos-hoy');
       const muertos = parseInt(muertosInput.value);
+
+      if (!lote) {
+        alert('Debe crear o seleccionar un lote.');
+        return;
+      }
 
       if (isNaN(muertos) || muertos <= 0) {
         alert('Ingrese un número válido.');
         return;
       }
-      if (!datos.fechaInicio) {
-        alert('Debe iniciar un lote.');
-        return;
-      }
 
-      const avesVivasActuales = datos.avesIniciales - datos.avesMuertas;
+      const avesVivasActuales = lote.avesIniciales - lote.avesMuertas;
       if (avesVivasActuales < muertos) {
         alert(`No puedes registrar ${muertos} muertes. Solo quedan ${avesVivasActuales} aves vivas.`);
         return;
       }
 
-      datos.avesMuertas += muertos;
+      lote.avesMuertas += muertos;
+      lote.historialMortalidad.push({ fecha: getFechaLocalHoy(), cantidad: muertos });
 
-      const hoyLocal = new Date();
-      const yyyy = hoyLocal.getFullYear();
-      const mm = String(hoyLocal.getMonth() + 1).padStart(2, '0');
-      const dd = String(hoyLocal.getDate()).padStart(2, '0');
-      const fechaLocal = `${yyyy}-${mm}-${dd}`;
-
-      datos.historialMortalidad.push({ fecha: fechaLocal, cantidad: muertos });
-
-      guardarDatos();
-      poblarTablasProyeccion(datos.avesIniciales - datos.avesMuertas);
-      actualizar();
-      actualizarHistorialMortalidad();
+      guardarAppData();
+      actualizarTodo();
 
       muertosInput.value = '';
-      alert(`Registradas ${muertos} aves muertas.`);
+      alert(`Registradas ${muertos} aves muertas en ${lote.nombre}.`);
+    }
+
+    function registrarHuevos() {
+      const lote = getLoteActivo();
+      const huevosInput = document.getElementById('huevos-hoy');
+      const huevos = parseInt(huevosInput.value);
+
+      if (!lote) {
+        alert('Debe crear o seleccionar un lote.');
+        return;
+      }
+
+      if (isNaN(huevos) || huevos < 0) {
+        alert('Ingrese un número válido de huevos.');
+        return;
+      }
+
+      lote.historialProduccion.push({ fecha: getFechaLocalHoy(), huevos });
+
+      guardarAppData();
+      actualizarTodo();
+
+      huevosInput.value = '';
+      alert(`Registrados ${huevos} huevos recolectados en ${lote.nombre}.`);
     }
 
     function eliminarLote() {
-      if (confirm('¿Estás seguro de eliminar el lote actual?')) {
-        datos = { avesIniciales: 0, avesMuertas: 0, fechaInicio: null, historialMortalidad: [] };
-        guardarDatos();
+      const lote = getLoteActivo();
 
-        poblarTablasProyeccion(1);
-        actualizar();
-        actualizarHistorialMortalidad();
+      if (!lote) {
+        alert('No hay lote activo para eliminar.');
+        return;
+      }
+
+      if (confirm(`¿Estás seguro de eliminar el lote "${lote.nombre}"?`)) {
+        appData.lotes = appData.lotes.filter(item => item.id !== lote.id);
+        appData.loteActivo = appData.lotes.length > 0 ? appData.lotes[0].id : null;
+        guardarAppData();
+
+        actualizarTodo();
 
         const muertosInput = document.getElementById('muertos-hoy');
+        const huevosInput = document.getElementById('huevos-hoy');
         if (muertosInput) muertosInput.value = '';
+        if (huevosInput) huevosInput.value = '';
 
         alert('Lote eliminado.');
       }
@@ -716,9 +957,14 @@ th {
     // --- Inicialización ---
     document.addEventListener('DOMContentLoaded', function () {
       document.getElementById('fecha-inicio').valueAsDate = new Date();
-      poblarTablasProyeccion(datos.avesIniciales > 0 ? (datos.avesIniciales - datos.avesMuertas) : 1);
+
+      if (appData.lotes.length > 0 && !appData.loteActivo) {
+        appData.loteActivo = appData.lotes[0].id;
+        guardarAppData();
+      }
+
+      actualizarTodo();
       mostrarTab('resumen');
-      actualizar();
     });
   </script></body>
 </html>
