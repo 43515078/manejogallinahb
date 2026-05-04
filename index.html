@@ -379,8 +379,8 @@ th {
         <div class="metrica proximo-alimento"><h3>Próximo alim.</h3><p id="levante-proximo-alimento">--</p></div>
         <div class="metrica consumo"><h3>Consumo hoy</h3><p id="levante-consumo">--</p></div>
         <div class="metrica peso-objetivo"><h3 id="levante-peso-titulo">Peso objetivo</h3><p id="levante-peso">0 g</p></div>
-        <div class="metrica temperatura"><h3>Temperatura Ideal</h3><p id="levante-temp">0°C</p></div>
-        <div class="metrica humedad"><h3>Humedad Ideal</h3><p id="levante-humedad">0%</p></div>
+        <div class="metrica temperatura"><h3>Temp. ideal</h3><p id="levante-temp">0°C</p></div>
+        <div class="metrica humedad"><h3>Humedad ideal</h3><p id="levante-humedad">0%</p></div>
       </div>
     </div>
 
@@ -607,6 +607,34 @@ th {
       return linea === 'harco' ? 'HARCO Negra' : 'Hy-Line Brown';
     }
 
+    function getTemperaturaIdeal(lote, diasVida, semanaIndex) {
+      if (lote && lote.linea === 'harco') {
+        if (diasVida <= 2) return '34 - 35°C';
+        if (diasVida <= 4) return '32 - 33°C';
+        if (diasVida <= 7) return '32°C';
+        if (diasVida <= 14) return '30°C';
+        if (diasVida <= 21) return '27°C';
+        if (diasVida <= 28) return '24°C';
+        if (diasVida <= 35) return '22°C';
+        if (diasVida <= 119) return '18 - 20°C';
+        return '21 - 24°C';
+      }
+
+      return (semanaIndex < TEMPERATURA_IDEAL_LEVANTE.length)
+        ? `${TEMPERATURA_IDEAL_LEVANTE[semanaIndex]}°C`
+        : '21 - 24°C';
+    }
+
+    function getHumedadIdeal(lote, semanaIndex) {
+      if (lote && lote.linea === 'harco') {
+        return '60 - 70%';
+      }
+
+      return (semanaIndex < HUMEDAD_IDEAL_LEVANTE.length)
+        ? `${HUMEDAD_IDEAL_LEVANTE[semanaIndex]}%`
+        : '50 - 60%';
+    }
+
     function getDatosSemana(lote, semana) {
       const linea = lote && lote.linea ? lote.linea : 'hyline';
 
@@ -752,10 +780,10 @@ th {
       const linea = lote && lote.linea ? lote.linea : 'hyline';
 
       if (linea === 'harco') {
-        if (semana >= 1 && semana <= 3) return 'Inicio 1';
-        if (semana >= 4 && semana <= 8) return 'Inicio 2';
+        if (semana >= 1 && semana <= 3) return 'Pre-inicio';
+        if (semana >= 4 && semana <= 8) return 'Inicio';
         if (semana >= 9 && semana <= 17) return 'Crecimiento';
-        if (semana >= 18 && semana <= 19) return 'Pre-Postura';
+        if (semana >= 18 && semana <= 19) return 'Pre-postura';
         if (semana >= 20 && semana <= 45) return 'Postura 1';
         if (semana >= 46 && semana <= 65) return 'Postura 2';
         if (semana >= 66 && semana <= 80) return 'Postura 3';
@@ -927,8 +955,8 @@ th {
         document.getElementById('levante-peso-titulo').textContent = `Peso obj. al ${fechaFinSemana}`;
         document.getElementById('levante-peso').textContent = `${datosSemanaActual[2]} g`;
 
-        const temp = (semanaIndex < TEMPERATURA_IDEAL_LEVANTE.length) ? `${TEMPERATURA_IDEAL_LEVANTE[semanaIndex]}°C` : '21 - 24°C';
-        const humedad = (semanaIndex < HUMEDAD_IDEAL_LEVANTE.length) ? `${HUMEDAD_IDEAL_LEVANTE[semanaIndex]}%` : '50 - 60%';
+        const temp = getTemperaturaIdeal(lote, diasTranscurridos, semanaIndex);
+        const humedad = getHumedadIdeal(lote, semanaIndex);
         document.getElementById('levante-temp').textContent = temp;
         document.getElementById('levante-humedad').textContent = humedad;
       } else {
