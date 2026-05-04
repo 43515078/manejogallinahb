@@ -799,6 +799,7 @@ th {
 
     // --- Consumo ideal Hy-Line (promedio del rango) g/ave/día ---
     function getConsumoIdealGAveDia(semana, lote = null) {
+      if (!lote) return null;
       if (lote && lote.linea === 'harco') {
         const datosHarco = getDatosSemana(lote, semana);
         return datosHarco[1];
@@ -848,6 +849,8 @@ th {
 
     // --- Actualizar Resumen ---
     function actualizar() {
+      const lote = getLoteActivo();
+      if (!lote) return;
       const lote = getLoteActivo();
       const tieneLoteIniciado = lote !== null && lote.fechaInicio !== null && lote.avesIniciales > 0;
 
@@ -959,6 +962,7 @@ th {
 
     // --- Poblar Tablas ---
     function poblarTablasProyeccion(numAves = 1) {
+      const lote = getLoteActivo();
       const lote = getLoteActivo();
       const tablaConsumoBody = document.querySelector('#tabla-consumo tbody');
       const tablaProduccionBody = document.querySelector('#tabla-produccion tbody');
