@@ -325,7 +325,7 @@ th {
   </style>
 </head><body>
   <div class="container">
-    <h1>🐔 MANEJO DE GALLINAS<br>HY-LINE BROWN</h1><div class="tabs">
+    <h1>🐔 MANEJO DE GALLINAS<br>PONEDORAS</h1><div class="tabs">
   <div class="tab active" onclick="mostrarTab('lote')">Lote</div>
   <div class="tab" onclick="mostrarTab('resumen')">Resumen</div>
   <div class="tab" onclick="mostrarTab('produccion')">Producción Huevos</div>
@@ -447,7 +447,7 @@ th {
 <!-- CONSUMO -->
 <div id="consumo" class="tab-content">
   <div class="card">
-    <h3>Proyección de Consumo de Alimento del Lote (Hy-Line)</h3>
+    <h3>Proyección de Consumo de Alimento del Lote</h3>
     <div class="tabla-container">
       <table id="tabla-consumo">
         <thead>
@@ -506,6 +506,10 @@ th {
 
     const CICLO_SEMANAS = 100;
     const SEMANA_INICIO_PRODUCCION = 18;
+
+    function getSemanaInicioProduccion(lote = null) {
+      return lote && lote.linea === 'harco' ? 19 : 18;
+    }
 
     // Tabla base (peso objetivo y % postura ideal para proyección)
     const DATOS_SEMANALES = [
@@ -624,7 +628,15 @@ th {
 
     // --- Migración para usuarios que tenían la versión antigua de 1 solo lote ---
     function cargarAppData() {
-      const guardado = JSON.parse(localStorage.getItem('gallinasApp'));
+      let guardado = null;
+
+      try {
+        guardado = JSON.parse(localStorage.getItem('gallinasApp'));
+      } catch (error) {
+        console.warn('Datos guardados dañados. Se reinicia la app.', error);
+        localStorage.removeItem('gallinasApp');
+        return { lotes: [], loteActivo: null };
+      }
 
       if (!guardado) {
         return { lotes: [], loteActivo: null };
@@ -632,6 +644,14 @@ th {
 
       if (Array.isArray(guardado.lotes)) {
         guardado.lotes = guardado.lotes.map(lote => normalizarLote(lote));
+
+        if (guardado.lotes.length > 0) {
+          const activoExiste = guardado.lotes.some(lote => lote.id === Number(guardado.loteActivo));
+          guardado.loteActivo = activoExiste ? Number(guardado.loteActivo) : guardado.lotes[guardado.lotes.length - 1].id;
+        } else {
+          guardado.loteActivo = null;
+        }
+
         return guardado;
       }
 
@@ -657,7 +677,7 @@ th {
 
     function normalizarLote(lote) {
       return {
-        id: lote.id || Date.now(),
+        id: Number(lote.id) || Date.now() + Math.floor(Math.random() * 1000),
         nombre: lote.nombre || 'Lote sin nombre',
         linea: lote.linea || 'hyline',
         avesIniciales: lote.avesIniciales || 0,
@@ -799,7 +819,6 @@ th {
 
     // --- Consumo ideal Hy-Line (promedio del rango) g/ave/día ---
     function getConsumoIdealGAveDia(semana, lote = null) {
-      if (!lote) return null;
       if (lote && lote.linea === 'harco') {
         const datosHarco = getDatosSemana(lote, semana);
         return datosHarco[1];
@@ -850,9 +869,8 @@ th {
     // --- Actualizar Resumen ---
     function actualizar() {
       const lote = getLoteActivo();
-      if (!lote) return;
-      const lote = getLoteActivo();
       const tieneLoteIniciado = lote !== null && lote.fechaInicio !== null && lote.avesIniciales > 0;
+      const semanaInicioProduccion = getSemanaInicioProduccion(lote);
 
       const cardSeleccionarLote = document.getElementById('card-seleccionar-lote');
       if (cardSeleccionarLote) {
@@ -892,7 +910,7 @@ th {
       const consumoLoteDiaKg = (consumoGAveDia !== null) ? (consumoGAveDia * avesVivasActuales) / 1000 : null;
       const consumoLoteTexto = (consumoLoteDiaKg !== null) ? `${consumoLoteDiaKg.toFixed(2)} kg` : '--';
 
-      if (semanaActual < SEMANA_INICIO_PRODUCCION) {
+      if (semanaActual < semanaInicioProduccion) {
         document.getElementById('resumen-levante').style.display = 'block';
         document.getElementById('resumen-produccion').style.display = 'none';
 
@@ -963,7 +981,6 @@ th {
     // --- Poblar Tablas ---
     function poblarTablasProyeccion(numAves = 1) {
       const lote = getLoteActivo();
-      const lote = getLoteActivo();
       const tablaConsumoBody = document.querySelector('#tabla-consumo tbody');
       const tablaProduccionBody = document.querySelector('#tabla-produccion tbody');
       const tablaPesosBody = document.querySelector('#tabla-pesos tbody');
@@ -1008,7 +1025,7 @@ th {
         let huevosAcumuladosTexto = '--';
         let produccionTexto = '0%';
 
-        if (semanaNum >= SEMANA_INICIO_PRODUCCION) {
+        if (semanaNum >= getSemanaInicioProduccion(lote)) {
           produccionTexto = `${posturaPorc}%`;
 
           const huevosDiariosLote = (posturaPorc / 100) * numAves;
@@ -1112,7 +1129,7 @@ th {
       }
 
       const nuevoLote = {
-        id: Date.now(),
+        id: Date.now() + Math.floor(Math.random() * 1000),
         nombre,
         linea,
         avesIniciales: cantidad,
@@ -1125,6 +1142,8 @@ th {
       appData.lotes.push(nuevoLote);
       appData.loteActivo = nuevoLote.id;
       guardarAppData();
+
+      cargarSelectorLotes();
 
       nombreInput.value = '';
       cantidadInput.value = '';
