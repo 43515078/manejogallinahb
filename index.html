@@ -350,6 +350,10 @@ th {
   <div id="formulario-inicio" class="card">
     <h3>Crear nuevo lote</h3>
     <input type="text" id="nombre-lote" placeholder="Nombre del lote o cliente. Ej: Cliente Juan - Galpón 1" />
+    <select id="linea-genetica">
+      <option value="hyline">Hy-Line Brown</option>
+      <option value="harco">HARCO Negra</option>
+    </select>
     <input type="number" id="aves-iniciales" placeholder="Cantidad de aves iniciales" min="1" />
     <input type="date" id="fecha-inicio" />
     <button class="btn-iniciar" onclick="iniciarLote()">🟢 Crear Lote</button>
@@ -538,6 +542,86 @@ th {
       16, 16, 16, 16
     ];
 
+    // Datos oficiales HARCO: tabla de levante 1-19 semanas + curva de postura anclada hasta 90 semanas.
+    const HARCO_LEVANTE = {
+      1: { peso: 77, consumo: 12.7, produccion: 0 },
+      2: { peso: 138, consumo: 20.7, produccion: 0 },
+      3: { peso: 209, consumo: 27.6, produccion: 0 },
+      4: { peso: 297, consumo: 34.5, produccion: 0 },
+      5: { peso: 396, consumo: 40.3, produccion: 0 },
+      6: { peso: 517, consumo: 46.0, produccion: 0 },
+      7: { peso: 638, consumo: 51.8, produccion: 0 },
+      8: { peso: 748, consumo: 56.4, produccion: 0 },
+      9: { peso: 858, consumo: 61.0, produccion: 0 },
+      10: { peso: 957, consumo: 64.4, produccion: 0 },
+      11: { peso: 1056, consumo: 67.9, produccion: 0 },
+      12: { peso: 1155, consumo: 71.3, produccion: 0 },
+      13: { peso: 1243, consumo: 74.8, produccion: 0 },
+      14: { peso: 1320, consumo: 78.2, produccion: 0 },
+      15: { peso: 1397, consumo: 81.7, produccion: 0 },
+      16: { peso: 1474, consumo: 85.1, produccion: 0 },
+      17: { peso: 1551, consumo: 88.6, produccion: 0 },
+      18: { peso: 1628, consumo: 94.3, produccion: 0 },
+      19: { peso: 1716, consumo: 100.1, produccion: 9.7 }
+    };
+
+    const HARCO_PRODUCCION_ANCLAS = [
+      { semana: 19, produccion: 9.7 },
+      { semana: 20, produccion: 38.8 },
+      { semana: 21, produccion: 59.3 },
+      { semana: 22, produccion: 77.8 },
+      { semana: 23, produccion: 87.6 },
+      { semana: 24, produccion: 90.4 },
+      { semana: 25, produccion: 91.9 },
+      { semana: 26, produccion: 92.7 },
+      { semana: 27, produccion: 93.1 },
+      { semana: 28, produccion: 92.9 },
+      { semana: 30, produccion: 92.5 },
+      { semana: 40, produccion: 90.5 },
+      { semana: 50, produccion: 87.4 },
+      { semana: 60, produccion: 84.2 },
+      { semana: 70, produccion: 79.9 },
+      { semana: 80, produccion: 74.9 },
+      { semana: 90, produccion: 67.8 },
+      { semana: 100, produccion: 60.0 }
+    ];
+
+    function interpolarHarcoProduccion(semana) {
+      if (semana < 19) return 0;
+      for (let i = 0; i < HARCO_PRODUCCION_ANCLAS.length - 1; i++) {
+        const a = HARCO_PRODUCCION_ANCLAS[i];
+        const b = HARCO_PRODUCCION_ANCLAS[i + 1];
+        if (semana >= a.semana && semana <= b.semana) {
+          const avance = (semana - a.semana) / (b.semana - a.semana);
+          return a.produccion + ((b.produccion - a.produccion) * avance);
+        }
+      }
+      return HARCO_PRODUCCION_ANCLAS[HARCO_PRODUCCION_ANCLAS.length - 1].produccion;
+    }
+
+    function getLineaNombre(linea) {
+      return linea === 'harco' ? 'HARCO Negra' : 'Hy-Line Brown';
+    }
+
+    function getDatosSemana(lote, semana) {
+      const linea = lote && lote.linea ? lote.linea : 'hyline';
+
+      if (linea === 'harco') {
+        const datosLevante = HARCO_LEVANTE[semana];
+        if (datosLevante) {
+          return [semana, datosLevante.consumo, datosLevante.peso, datosLevante.produccion];
+        }
+
+        const peso = Math.round(1716 + ((Math.min(semana, 90) - 19) * ((2150 - 1716) / (90 - 19))));
+        const produccion = Number(interpolarHarcoProduccion(semana).toFixed(1));
+        const consumo = 120.5;
+        return [semana, consumo, peso, produccion];
+      }
+
+      const index = Math.max(0, Math.min(semana - 1, DATOS_SEMANALES.length - 1));
+      return DATOS_SEMANALES[index];
+    }
+
     // --- Migración para usuarios que tenían la versión antigua de 1 solo lote ---
     function cargarAppData() {
       const guardado = JSON.parse(localStorage.getItem('gallinasApp'));
@@ -575,6 +659,7 @@ th {
       return {
         id: lote.id || Date.now(),
         nombre: lote.nombre || 'Lote sin nombre',
+        linea: lote.linea || 'hyline',
         avesIniciales: lote.avesIniciales || 0,
         avesMuertas: lote.avesMuertas || 0,
         fechaInicio: lote.fechaInicio || null,
@@ -606,7 +691,7 @@ th {
       appData.lotes.forEach(lote => {
         const option = document.createElement('option');
         option.value = lote.id;
-        option.textContent = lote.nombre;
+        option.textContent = `${lote.nombre} - ${getLineaNombre(lote.linea)}`;
         if (lote.id === appData.loteActivo) option.selected = true;
         selector.appendChild(option);
       });
@@ -643,7 +728,20 @@ th {
     }
 
     // --- Tipo de alimento por semana ---
-    function getTipoAlimento(semana) {
+    function getTipoAlimento(semana, lote = null) {
+      const linea = lote && lote.linea ? lote.linea : 'hyline';
+
+      if (linea === 'harco') {
+        if (semana >= 1 && semana <= 3) return 'Inicio 1';
+        if (semana >= 4 && semana <= 8) return 'Inicio 2';
+        if (semana >= 9 && semana <= 17) return 'Crecimiento';
+        if (semana >= 18 && semana <= 19) return 'Pre-Postura';
+        if (semana >= 20 && semana <= 45) return 'Postura 1';
+        if (semana >= 46 && semana <= 65) return 'Postura 2';
+        if (semana >= 66 && semana <= 80) return 'Postura 3';
+        return 'Postura 4';
+      }
+
       if (semana >= 1 && semana <= 3) return 'Inicio 1';
       if (semana >= 4 && semana <= 6) return 'Inicio 2';
       if (semana >= 7 && semana <= 12) return 'Crecimiento';
@@ -653,9 +751,9 @@ th {
     }
 
     // --- Detectar próximo cambio de alimento ---
-    function getProximoAlimento(tipoActual, semanaActual) {
+    function getProximoAlimento(tipoActual, semanaActual, lote = null) {
       for (let s = semanaActual + 1; s <= CICLO_SEMANAS; s++) {
-        const tipo = getTipoAlimento(s);
+        const tipo = getTipoAlimento(s, lote);
         if (tipo !== tipoActual) {
           return { semana: s, tipo };
         }
@@ -700,7 +798,11 @@ th {
     }
 
     // --- Consumo ideal Hy-Line (promedio del rango) g/ave/día ---
-    function getConsumoIdealGAveDia(semana) {
+    function getConsumoIdealGAveDia(semana, lote = null) {
+      if (lote && lote.linea === 'harco') {
+        const datosHarco = getDatosSemana(lote, semana);
+        return datosHarco[1];
+      }
       const levante = {
         1: 13.0, 2: 19.0, 3: 22.5, 4: 27.5, 5: 32.5, 6: 39.5, 7: 45.0, 8: 51.5, 9: 56.5,
         10: 60.0, 11: 64.5, 12: 67.0, 13: 69.0, 14: 71.5, 15: 73.5, 16: 76.0, 17: 78.5
@@ -773,17 +875,17 @@ th {
       const semanaIndex = Math.max(0, Math.min(semanaActual - 1, DATOS_SEMANALES.length - 1));
 
       const avesVivasActuales = Math.max(0, lote.avesIniciales - lote.avesMuertas);
-      const datosSemanaActual = DATOS_SEMANALES[semanaIndex];
-      const alimentoActual = getTipoAlimento(semanaActual);
+      const datosSemanaActual = getDatosSemana(lote, semanaActual);
+      const alimentoActual = getTipoAlimento(semanaActual, lote);
 
-      const proximoAlimento = getProximoAlimento(alimentoActual, semanaActual);
+      const proximoAlimento = getProximoAlimento(alimentoActual, semanaActual, lote);
       const textoProximoAlimento = formatearProximoAlimento(lote, proximoAlimento);
 
       const progresoPorcentaje = Math.min((semanaActual / CICLO_SEMANAS) * 100, 100);
       document.getElementById('progreso-lote').style.width = `${progresoPorcentaje}%`;
 
       // Consumo lote/día (kg)
-      const consumoGAveDia = getConsumoIdealGAveDia(semanaActual);
+      const consumoGAveDia = getConsumoIdealGAveDia(semanaActual, lote);
       const consumoLoteDiaKg = (consumoGAveDia !== null) ? (consumoGAveDia * avesVivasActuales) / 1000 : null;
       const consumoLoteTexto = (consumoLoteDiaKg !== null) ? `${consumoLoteDiaKg.toFixed(2)} kg` : '--';
 
@@ -792,7 +894,7 @@ th {
         document.getElementById('resumen-produccion').style.display = 'none';
 
         document.getElementById('titulo-resumen').textContent = `Resumen de Levante`;
-        document.getElementById('levante-nombre-lote').textContent = lote.nombre;
+        document.getElementById('levante-nombre-lote').textContent = `${lote.nombre} (${getLineaNombre(lote.linea)})`;
         document.getElementById('levante-vivos').textContent = avesVivasActuales;
         document.getElementById('levante-muertos').textContent = lote.avesMuertas;
         document.getElementById('levante-dias').textContent = diasTranscurridos;
@@ -813,7 +915,7 @@ th {
         document.getElementById('resumen-produccion').style.display = 'block';
 
         document.getElementById('titulo-resumen').textContent = `Resumen de Producción`;
-        document.getElementById('prod-nombre-lote').textContent = lote.nombre;
+        document.getElementById('prod-nombre-lote').textContent = `${lote.nombre} (${getLineaNombre(lote.linea)})`;
         document.getElementById('prod-vivos').textContent = avesVivasActuales;
         document.getElementById('prod-muertos').textContent = lote.avesMuertas;
         document.getElementById('prod-semanas').textContent = semanaActual > CICLO_SEMANAS ? `${CICLO_SEMANAS} (Fin)` : semanaActual;
@@ -871,13 +973,13 @@ th {
 
       for (let semanaNum = 1; semanaNum <= CICLO_SEMANAS; semanaNum++) {
         const i = Math.min(semanaNum - 1, DATOS_SEMANALES.length - 1);
-        const [, , pesoObjetivo, posturaPorc] = DATOS_SEMANALES[i];
+        const [, , pesoObjetivo, posturaPorc] = getDatosSemana(lote, semanaNum);
 
-        const tipoAlimento = getTipoAlimento(semanaNum);
+        const tipoAlimento = getTipoAlimento(semanaNum, lote);
         const rangoFechas = lote ? getRangoFechaSemana(lote.fechaInicio, semanaNum) : '--';
 
         // CONSUMO (Hy-Line)
-        const consumoDiarioIdeal = getConsumoIdealGAveDia(semanaNum);
+        const consumoDiarioIdeal = getConsumoIdealGAveDia(semanaNum, lote);
         const consumoDiarioTexto = (consumoDiarioIdeal !== null) ? consumoDiarioIdeal.toFixed(1) : '--';
         const consumoSemanalLoteKg = (consumoDiarioIdeal !== null)
           ? (consumoDiarioIdeal * 7 * numAves) / 1000
@@ -991,10 +1093,12 @@ th {
     // --- Acciones ---
     function iniciarLote() {
       const nombreInput = document.getElementById('nombre-lote');
+      const lineaInput = document.getElementById('linea-genetica');
       const cantidadInput = document.getElementById('aves-iniciales');
       const fechaInput = document.getElementById('fecha-inicio');
 
       const nombre = nombreInput.value.trim() || `Lote ${appData.lotes.length + 1}`;
+      const linea = lineaInput.value;
       const cantidad = parseInt(cantidadInput.value);
       const fecha = fechaInput.value;
 
@@ -1006,6 +1110,7 @@ th {
       const nuevoLote = {
         id: Date.now(),
         nombre,
+        linea,
         avesIniciales: cantidad,
         avesMuertas: 0,
         fechaInicio: fecha,
@@ -1022,7 +1127,7 @@ th {
       fechaInput.valueAsDate = new Date();
 
       actualizarTodo();
-      alert(`¡Lote "${nombre}" creado con ${cantidad} aves!`);
+      alert(`¡Lote "${nombre}" creado con ${cantidad} aves! Línea: ${getLineaNombre(linea)}.`);
     }
 
     function registrarMuertos() {
